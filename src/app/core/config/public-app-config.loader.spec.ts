@@ -11,9 +11,9 @@ describe('loadPublicAppConfig', () => {
 
   it('Given_ValidStaticConfig_When_loadPublicAppConfigIsCalled_Then_ConfigIsReturned', async () => {
     // Given
-    const fetchImplementation = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(createResponse(true, 200, validConfig));
+    const fetchImplementation = jasmine
+      .createSpy<typeof fetch>('fetch')
+      .and.resolveTo(createResponse(true, 200, validConfig));
 
     // When
     const result = await loadPublicAppConfig(fetchImplementation);
@@ -28,30 +28,30 @@ describe('loadPublicAppConfig', () => {
 
   it('Given_UnavailableStaticConfig_When_loadPublicAppConfigIsCalled_Then_ErrorIsThrown', async () => {
     // Given
-    const fetchImplementation = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(createResponse(false, 404, {}));
+    const fetchImplementation = jasmine
+      .createSpy<typeof fetch>('fetch')
+      .and.resolveTo(createResponse(false, 404, {}));
 
     // When
     const action = loadPublicAppConfig(fetchImplementation);
 
     // Then
-    await expect(action).rejects.toThrow(
+    await expectAsync(action).toBeRejectedWithError(
       'Le chargement de la configuration publique a échoué (404).',
     );
   });
 
   it('Given_InvalidStaticConfig_When_loadPublicAppConfigIsCalled_Then_ErrorIsThrown', async () => {
     // Given
-    const fetchImplementation = vi
-      .fn<typeof fetch>()
-      .mockResolvedValue(createResponse(true, 200, { apiBaseUrl: '' }));
+    const fetchImplementation = jasmine
+      .createSpy<typeof fetch>('fetch')
+      .and.resolveTo(createResponse(true, 200, { apiBaseUrl: '' }));
 
     // When
     const action = loadPublicAppConfig(fetchImplementation);
 
     // Then
-    await expect(action).rejects.toThrow(
+    await expectAsync(action).toBeRejectedWithError(
       'La configuration publique est invalide.',
     );
   });
