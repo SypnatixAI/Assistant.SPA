@@ -11,6 +11,9 @@ export default tseslint.config(
       ...tseslint.configs.stylistic,
       ...angular.configs.tsRecommended,
     ],
+    rules: {
+      '@angular-eslint/prefer-inject': 'off',
+    },
     processor: angular.processInlineTemplates,
   },
   {

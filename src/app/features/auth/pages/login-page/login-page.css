@@ -6,3 +6,17 @@
   letter-spacing: 0.08em;
   text-transform: uppercase;
 }
+
+.page-card .error-message {
+  margin-top: 1rem;
+  color: #a32121;
+}
+
+.page-card .support-message {
+  margin-top: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.support-message a {
+  color: var(--color-primary);
+}

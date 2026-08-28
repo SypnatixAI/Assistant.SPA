@@ -1,10 +1,18 @@
 <main class="page-shell">
   <section class="page-card" aria-labelledby="login-title">
     <p class="eyebrow">AssistantCore</p>
-    <h1 id="login-title">Bienvenue</h1>
-    <p>
-      Le parcours de connexion Microsoft sera ajouté dans la prochaine étape.
-      Cette page publique confirme que le routeur est prêt.
+    <h1 id="login-title">Connexion en cours…</h1>
+    <p role="status" aria-live="polite">
+      Redirection vers la connexion professionnelle Microsoft.
+    </p>
+
+    @if (errorMessage(); as message) {
+      <p class="error-message" role="alert">{{ message }}</p>
+    }
+
+    <p class="support-message">
+      Besoin d’aide?
+      <a href="mailto:support@assistantcore.com">Contactez le soutien.</a>
     </p>
   </section>
 </main>
