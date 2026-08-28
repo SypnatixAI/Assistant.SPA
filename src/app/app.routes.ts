@@ -1,6 +1,6 @@
 import { Routes } from '@angular/router';
 
-import { temporaryAuthGuard } from './core/guards/temporary-auth.guard';
+import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
@@ -13,7 +13,7 @@ export const routes: Routes = [
   },
   {
     path: 'app',
-    canActivate: [temporaryAuthGuard],
+    canActivate: [AuthGuard],
     loadComponent: () =>
       import('./features/chat/pages/application-page/application-page').then(
         ({ ApplicationPage }) => ApplicationPage,
@@ -21,6 +21,14 @@ export const routes: Routes = [
     title: 'AssistantCore',
   },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
+  {
+    path: 'technical-error',
+    loadComponent: () =>
+      import(
+        './shared/pages/technical-error-page/technical-error-page'
+      ).then(({ TechnicalErrorPage }) => TechnicalErrorPage),
+    title: 'Erreur technique | AssistantCore',
+  },
   {
     path: '**',
     loadComponent: () =>

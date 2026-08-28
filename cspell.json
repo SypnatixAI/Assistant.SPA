@@ -19,8 +19,14 @@
     "IndexedDB",
     "localStorage",
     "methode",
+    "microsoftonline",
+    "MSAL",
+    "Msal",
+    "msal",
+    "PKCE",
     "resultat",
     "sessionStorage",
+    "Tremblay",
     "TypeScript",
     "Vitest"
   ]

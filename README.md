@@ -1,8 +1,7 @@
 # Assistant.SPA
 
-Application web Angular d’AssistantCore. Le projet fournit pour le moment le
-socle technique, les routes minimales et les emplacements réservés aux futures
-fonctionnalités.
+Application web Angular d’AssistantCore. La SPA utilise Microsoft Entra pour
+connecter les employés avant de construire leur session auprès de l’API.
 
 ## Prérequis
 
@@ -34,14 +33,38 @@ npm run typecheck  # vérification TypeScript stricte
 npm run verify     # vérification complète du ticket
 ```
 
-## Routes initiales
+## Routes
 
-- `/login` : page publique temporaire;
-- `/app` : route applicative protégée temporairement;
+- `/login` : lance automatiquement la connexion professionnelle Microsoft;
+- `/app` : route affichée uniquement après une session AssistantCore valide;
+- `/technical-error` : arrêt sécurisé après une erreur inattendue;
 - toute adresse inconnue : page 404.
 
-La garde de `/app` redirige vers `/login` jusqu’à l’implémentation de la session
-Microsoft Entra.
+La garde de `/app` redirige vers `/login` lorsque la session n’est pas valide.
+La page de connexion envoie immédiatement l’utilisateur vers Microsoft, sans
+étape ni bouton intermédiaire. Une annulation ou un consentement refusé reste
+affiché sans relancer automatiquement la redirection.
+
+## Configuration Microsoft Entra
+
+Créer une App Registration pour la SPA, distincte de celle de l’API. Dans la
+plateforme `Single-page application`, enregistrer exactement l’URI de retour de
+l’environnement. En local, cette URI est :
+
+```text
+http://localhost:4200/login
+```
+
+Ajouter la permission déléguée exposée par l’API :
+
+```text
+api://<API_CLIENT_ID>/access_as_user
+```
+
+L’App Registration SPA ne doit contenir aucun client secret. Microsoft
+Authentication Library (MSAL) utilise le flux Authorization Code avec PKCE et
+conserve elle-même son cache dans la session du navigateur. Le code applicatif
+ne lit ni ne persiste le token.
 
 ## Configuration publique
 
@@ -49,8 +72,10 @@ Avant de démarrer Angular, la SPA charge le fichier statique
 `/assets/config/config.json`. Il contient l’URL de l’API, le client ID Entra,
 l’autorité et le scope.
 
-En local, `public/assets/config/config.json` fournit des valeurs codées en dur
-pour `ng serve`. Ce fichier local est exclu du build de production.
+En local, `public/assets/config/config.json` utilise la racine `/`. Le serveur de
+développement transmet les appels `/api` à AssistantCore sur
+`http://localhost:5043` grâce à `proxy.conf.json`. Ce fichier de configuration
+publique local est exclu du build de production.
 
 En DEV, CERT et PROD, le déploiement ou le BFF doit placer un fichier portant le
 même nom dans `assets/config/config.json`. La SPA utilise ainsi le même chemin et
@@ -64,16 +89,30 @@ configuration après un déploiement.
 Ces données sont visibles dans le navigateur et ne doivent jamais contenir de
 secret, de client secret, de clé API ou d’adresse privée de production.
 
+## Vérification manuelle de la connexion
+
+1. Remplacer les valeurs d’exemple dans `public/assets/config/config.json`.
+2. Démarrer AssistantCore et la SPA, puis ouvrir `/app` sans session pour
+   vérifier la redirection automatique vers Microsoft.
+3. Terminer la connexion, la MFA ou le consentement demandé.
+4. Vérifier que `/app` apparaît seulement après la réponse valide de
+   `GET /api/core/authenticateUser`.
+5. Recharger la page pour vérifier l’acquisition silencieuse du token.
+6. Utiliser `Se déconnecter` et vérifier le retour vers `/login`.
+
 ## Architecture
 
 ```text
 src/app/
   core/
-    auth/          session et configuration Microsoft Entra
     guards/        protection des routes
     interceptors/  Bearer token et erreurs HTTP
-    api/           HttpClient et contrats backend
     config/        configuration publique typée
+    services/
+      authentication/  session et configuration Microsoft Entra
+      api/              clients HttpClient typés
+      errors/           état d’erreur technique global
+      navigation/       navigation Angular et redirections Microsoft
   features/
     auth/
     chat/
@@ -86,3 +125,6 @@ src/app/
 
 Les fonctionnalités utilisent des composants standalone et des routes chargées
 paresseusement. Les composants visuels n’appellent pas directement `HttpClient`.
+Une erreur HTTP backend ou une exception Angular inattendue interrompt le flow
+courant et affiche `/technical-error`. Une erreur survenant avant le démarrage
+d’Angular affiche le même message sous forme de page statique.

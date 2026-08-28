@@ -1,5 +1,5 @@
 {
-  "apiBaseUrl": "http://localhost:5066",
+  "apiBaseUrl": "/",
   "entraClientId": "replace-with-public-client-id",
   "entraAuthority": "https://login.microsoftonline.com/common",
   "entraScope": "api://replace-with-api-client-id/access_as_user"
