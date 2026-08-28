@@ -1,0 +1,27 @@
+{
+  "$schema": "https://raw.githubusercontent.com/streetsidesoftware/cspell/main/cspell.schema.json",
+  "version": "0.2",
+  "language": "en,fr",
+  "import": ["@cspell/dict-fr-fr/cspell-ext.json"],
+  "useGitignore": true,
+  "ignorePaths": [
+    ".angular/**",
+    "dist/**",
+    "node_modules/**",
+    "package-lock.json",
+    "public/favicon.ico"
+  ],
+  "words": [
+    "AssistantCore",
+    "Entra",
+    "Gherkin",
+    "HttpClient",
+    "IndexedDB",
+    "localStorage",
+    "methode",
+    "resultat",
+    "sessionStorage",
+    "TypeScript",
+    "Vitest"
+  ]
+}
