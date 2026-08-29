@@ -1,6 +1,8 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthError } from '@azure/msal-browser';
 
+import { ApiError } from '../../../domain/errors/api-error';
+
 const CANCELLED_ERROR_CODES = new Set(['user_cancelled', 'user_canceled']);
 const CONSENT_ERROR_CODES = new Set([
   'access_denied',
@@ -30,7 +32,7 @@ export function getAuthenticationErrorMessage(error: unknown): string {
     return 'La connexion Microsoft est mal configurée. Contactez votre administrateur.';
   }
 
-  if (error instanceof HttpErrorResponse) {
+  if (error instanceof HttpErrorResponse || error instanceof ApiError) {
     if (error.status === 401 || error.status === 403) {
       return "Votre compte n’est pas autorisé à accéder à AssistantCore.";
     }

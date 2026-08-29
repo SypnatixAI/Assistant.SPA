@@ -30,6 +30,32 @@ describe('LocalJwtAuthenticationProvider', () => {
     expect(localAccessTokenService.get()).toBe('local-access-token');
   });
 
+  it('Given_RejectedLocalToken_When_recoverIsCalled_Then_AccessTokenIsReplaced', async () => {
+    // Given
+    const mockAuthenticationApiService = {
+      getAccessToken: jasmine.createSpy('getAccessToken').and.returnValue(
+        of({
+          access_token: 'replacement-access-token',
+          expires_in: 28_800,
+          token_type: 'Bearer',
+        }),
+      ),
+    } as unknown as MockAuthenticationApiService;
+    const localAccessTokenService = new LocalAccessTokenService();
+    localAccessTokenService.set('rejected-access-token');
+    const provider = new LocalJwtAuthenticationProvider(
+      mockAuthenticationApiService,
+      localAccessTokenService,
+    );
+
+    // When
+    const authenticated = await firstValueFrom(provider.recover());
+
+    // Then
+    expect(authenticated).toBeTrue();
+    expect(localAccessTokenService.get()).toBe('replacement-access-token');
+  });
+
   it('Given_LocalAccessToken_When_logoutIsCalled_Then_AccessTokenIsRemoved', async () => {
     // Given
     const localAccessTokenService = new LocalAccessTokenService();

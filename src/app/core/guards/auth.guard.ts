@@ -18,6 +18,10 @@ export class AuthGuard implements CanActivate {
       return this.applicationNavigationService.createTechnicalErrorUrlTree();
     }
 
+    if (this.authenticationService.status() === 'forbidden') {
+      return this.applicationNavigationService.createAccessDeniedUrlTree();
+    }
+
     return this.authenticationService.isAuthenticated()
       ? true
       : this.applicationNavigationService.createLoginUrlTree();

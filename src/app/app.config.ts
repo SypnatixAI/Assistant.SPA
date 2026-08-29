@@ -6,7 +6,12 @@ import {
   provideAppInitializer,
   provideBrowserGlobalErrorListeners,
 } from '@angular/core';
-import { HTTP_INTERCEPTORS, provideHttpClient, withInterceptorsFromDi } from '@angular/common/http';
+import {
+  HTTP_INTERCEPTORS,
+  provideHttpClient,
+  withInterceptors,
+  withInterceptorsFromDi,
+} from '@angular/common/http';
 import { provideRouter } from '@angular/router';
 import {
   MSAL_GUARD_CONFIG,
@@ -21,6 +26,7 @@ import {
 import { LaunchMode, PUBLIC_APP_CONFIG, PublicAppConfig } from './core/config/public-app-config';
 import { routes } from './app.routes';
 import { GlobalErrorHandler } from './core/errors/global-error.handler';
+import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
 import { LocalJwtInterceptor } from './core/interceptors/local-jwt.interceptor';
 import { TechnicalErrorInterceptor } from './core/interceptors/technical-error.interceptor';
 import { AuthenticationService } from './core/services/authentication/authentication.service';
@@ -38,7 +44,10 @@ export function createAppConfig(publicAppConfig: PublicAppConfig): ApplicationCo
   return {
     providers: [
       provideBrowserGlobalErrorListeners(),
-      provideHttpClient(withInterceptorsFromDi()),
+      provideHttpClient(
+        withInterceptors([apiErrorInterceptor]),
+        withInterceptorsFromDi(),
+      ),
       provideRouter(routes),
       { provide: PUBLIC_APP_CONFIG, useValue: publicAppConfig },
       ...createAuthenticationProviders(publicAppConfig),

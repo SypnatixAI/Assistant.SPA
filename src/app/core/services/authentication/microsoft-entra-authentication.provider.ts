@@ -39,6 +39,15 @@ export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvi
     );
   }
 
+  recover(): Observable<boolean> {
+    const account = this.msalService.instance.getActiveAccount();
+    if (account === null) {
+      return this.login();
+    }
+
+    return this.acquireToken(account, true);
+  }
+
   logout(): Observable<void> {
     return this.authenticationNavigationService.logout(
       this.msalService.instance.getActiveAccount(),
@@ -59,10 +68,14 @@ export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvi
     return account;
   }
 
-  private acquireToken(account: AccountInfo): Observable<boolean> {
+  private acquireToken(
+    account: AccountInfo,
+    forceRefresh = false,
+  ): Observable<boolean> {
     return this.msalService
       .acquireTokenSilent({
         account,
+        forceRefresh,
         scopes: [this.publicAppConfig.entraScope],
       })
       .pipe(

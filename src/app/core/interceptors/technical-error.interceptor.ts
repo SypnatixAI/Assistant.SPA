@@ -20,7 +20,7 @@ export class TechnicalErrorInterceptor implements HttpInterceptor {
   ): Observable<HttpEvent<unknown>> {
     return next.handle(request).pipe(
       catchError((error: unknown) => {
-        if (error instanceof HttpErrorResponse) {
+        if (error instanceof HttpErrorResponse && error.status >= 500) {
           this.technicalErrorService.report(error);
         }
 

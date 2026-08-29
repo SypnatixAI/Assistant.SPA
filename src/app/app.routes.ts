@@ -4,6 +4,14 @@ import { AuthGuard } from './core/guards/auth.guard';
 
 export const routes: Routes = [
   {
+    path: 'access-denied',
+    loadComponent: () =>
+      import('./shared/pages/access-denied-page/access-denied-page').then(
+        ({ AccessDeniedPage }) => AccessDeniedPage,
+      ),
+    title: 'Accès refusé | AssistantCore',
+  },
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/pages/login-page/login-page').then(
