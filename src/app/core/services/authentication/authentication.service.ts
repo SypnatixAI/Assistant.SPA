@@ -20,13 +20,7 @@ import {
   getAuthenticationErrorMessage,
   isRecoverableAuthenticationError,
 } from './authentication-error';
-
-export type AuthenticationStatus =
-  | 'loading'
-  | 'authenticated'
-  | 'unauthenticated'
-  | 'forbidden'
-  | 'error';
+import { AuthenticationStatus } from './authentication-status';
 
 interface AuthenticationState {
   readonly status: AuthenticationStatus;
@@ -37,7 +31,7 @@ interface AuthenticationState {
 const INITIAL_STATE: AuthenticationState = {
   errorMessage: null,
   session: null,
-  status: 'loading',
+  status: AuthenticationStatus.Loading,
 };
 
 @Injectable({ providedIn: 'root' })
@@ -45,7 +39,9 @@ export class AuthenticationService {
   private readonly state = signal<AuthenticationState>(INITIAL_STATE);
 
   readonly errorMessage = computed(() => this.state().errorMessage);
-  readonly isAuthenticated = computed(() => this.state().status === 'authenticated');
+  readonly isAuthenticated = computed(
+    () => this.state().status === AuthenticationStatus.Authenticated,
+  );
   readonly isLocalAuthentication: boolean;
   readonly session = computed(() => this.state().session);
   readonly status = computed(() => this.state().status);
@@ -92,7 +88,7 @@ export class AuthenticationService {
     this.state.set({
       errorMessage: null,
       session: null,
-      status: 'unauthenticated',
+      status: AuthenticationStatus.Unauthenticated,
     });
     this.authenticationProvider
       .logout()
@@ -107,7 +103,7 @@ export class AuthenticationService {
         this.state.set({
           errorMessage: null,
           session,
-          status: 'authenticated',
+          status: AuthenticationStatus.Authenticated,
         });
       }),
       catchError((error: unknown) => {
@@ -130,7 +126,7 @@ export class AuthenticationService {
     this.state.set({
       errorMessage,
       session: null,
-      status: 'unauthenticated',
+      status: AuthenticationStatus.Unauthenticated,
     });
     return of(undefined);
   }
@@ -139,7 +135,7 @@ export class AuthenticationService {
     this.state.set({
       errorMessage: getAuthenticationErrorMessage(error),
       session: null,
-      status: 'error',
+      status: AuthenticationStatus.Error,
     });
   }
 
@@ -148,7 +144,7 @@ export class AuthenticationService {
       this.state.set({
         errorMessage: getAuthenticationErrorMessage(error),
         session: null,
-        status: 'forbidden',
+        status: AuthenticationStatus.Forbidden,
       });
       return;
     }

@@ -1,6 +1,7 @@
 import { UrlTree } from '@angular/router';
 
 import { AuthenticationService } from '../services/authentication/authentication.service';
+import { AuthenticationStatus } from '../services/authentication/authentication-status';
 import { TechnicalErrorService } from '../services/errors/technical-error.service';
 import { ApplicationNavigationService } from '../services/navigation/application-navigation.service';
 import { AuthGuard } from './auth.guard';
@@ -9,7 +10,10 @@ describe('AuthGuard', () => {
   it('Given_TechnicalFailure_When_canActivateIsCalled_Then_TechnicalErrorPageIsReturned', () => {
     // Given
     const technicalErrorUrl = {} as UrlTree;
-    const authenticationService = createAuthenticationService(false, 'error');
+    const authenticationService = createAuthenticationService(
+      false,
+      AuthenticationStatus.Error,
+    );
     const technicalErrorService = createTechnicalErrorService(true);
     const applicationNavigationService = createNavigationService(
       {} as UrlTree,
@@ -32,7 +36,7 @@ describe('AuthGuard', () => {
     // Given
     const accessDeniedUrl = {} as UrlTree;
     const guard = new AuthGuard(
-      createAuthenticationService(false, 'forbidden'),
+      createAuthenticationService(false, AuthenticationStatus.Forbidden),
       createTechnicalErrorService(false),
       createNavigationService({} as UrlTree, {} as UrlTree, accessDeniedUrl),
     );
@@ -62,9 +66,9 @@ describe('AuthGuard', () => {
 
 function createAuthenticationService(
   authenticated: boolean,
-  status: 'authenticated' | 'unauthenticated' | 'forbidden' | 'error' = authenticated
-    ? 'authenticated'
-    : 'unauthenticated',
+  status: AuthenticationStatus = authenticated
+    ? AuthenticationStatus.Authenticated
+    : AuthenticationStatus.Unauthenticated,
 ): AuthenticationService {
   return {
     isAuthenticated: () => authenticated,

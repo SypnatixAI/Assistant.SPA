@@ -21,6 +21,9 @@
   - routing, guards et interceptors.
 - Organiser le code entre `core`, `features`, `domain` et `shared`.
 - Utiliser des composants standalone pour les nouvelles fonctionnalités.
+- Pour chaque composant Angular, placer le template et les styles dans des
+  fichiers `.html` et `.css` dédiés; ne pas utiliser `template` ou `styles`
+  inline dans le décorateur `@Component`.
 - Charger paresseusement les routes de fonctionnalités.
 - Éviter toute logique métier dans les composants visuels.
 - Les composants visuels ne doivent jamais appeler `HttpClient` directement.

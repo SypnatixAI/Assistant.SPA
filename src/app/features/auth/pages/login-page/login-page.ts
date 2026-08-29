@@ -8,8 +8,8 @@ import {
 
 import {
   AuthenticationService,
-  AuthenticationStatus,
 } from '../../../../core/services/authentication/authentication.service';
+import { AuthenticationStatus } from '../../../../core/services/authentication/authentication-status';
 import { ApplicationNavigationService } from '../../../../core/services/navigation/application-navigation.service';
 
 @Component({
@@ -19,6 +19,8 @@ import { ApplicationNavigationService } from '../../../../core/services/navigati
   templateUrl: './login-page.html',
 })
 export class LoginPage implements OnInit {
+  protected readonly AuthenticationStatus = AuthenticationStatus;
+
   readonly errorMessage: Signal<string | null>;
   readonly isLocalAuthentication: boolean;
   readonly status: Signal<AuthenticationStatus>;
@@ -44,7 +46,7 @@ export class LoginPage implements OnInit {
 
     if (
       !this.isLocalAuthentication &&
-      this.authenticationService.status() === 'unauthenticated'
+      this.authenticationService.status() === AuthenticationStatus.Unauthenticated
     ) {
       this.authenticationService.login();
     }

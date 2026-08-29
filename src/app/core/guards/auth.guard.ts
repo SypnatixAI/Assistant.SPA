@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { CanActivate, UrlTree } from '@angular/router';
 
 import { AuthenticationService } from '../services/authentication/authentication.service';
+import { AuthenticationStatus } from '../services/authentication/authentication-status';
 import { TechnicalErrorService } from '../services/errors/technical-error.service';
 import { ApplicationNavigationService } from '../services/navigation/application-navigation.service';
 
@@ -18,7 +19,9 @@ export class AuthGuard implements CanActivate {
       return this.applicationNavigationService.createTechnicalErrorUrlTree();
     }
 
-    if (this.authenticationService.status() === 'forbidden') {
+    if (
+      this.authenticationService.status() === AuthenticationStatus.Forbidden
+    ) {
       return this.applicationNavigationService.createAccessDeniedUrlTree();
     }
 

@@ -7,6 +7,7 @@ import { LoginPage } from './features/auth/pages/login-page/login-page';
 import { NotFoundPage } from './shared/pages/not-found-page/not-found-page';
 import { routes } from './app.routes';
 import { AuthenticationService } from './core/services/authentication/authentication.service';
+import { AuthenticationStatus } from './core/services/authentication/authentication-status';
 import { TechnicalErrorService } from './core/services/errors/technical-error.service';
 import { TechnicalErrorPage } from './shared/pages/technical-error-page/technical-error-page';
 
@@ -21,7 +22,7 @@ describe('Application routes', () => {
             errorMessage: () => null,
             isAuthenticated: () => false,
             login: jasmine.createSpy('login'),
-            status: () => 'unauthenticated',
+            status: () => AuthenticationStatus.Unauthenticated,
           },
         },
         {

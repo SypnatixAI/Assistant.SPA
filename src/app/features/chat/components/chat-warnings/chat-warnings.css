@@ -1,0 +1,29 @@
+.warnings {
+  display: grid;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+}
+
+p {
+  display: flex;
+  gap: 0.5rem;
+  margin: 0;
+  padding: 0.65rem;
+  border: 1px solid #f0dfae;
+  border-radius: var(--radius-small);
+  color: var(--color-warning-text);
+  background: var(--color-warning-surface);
+  font-size: 0.82rem;
+}
+
+span {
+  width: 1.15rem;
+  height: 1.15rem;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  font-size: 0.7rem;
+  font-weight: 800;
+}

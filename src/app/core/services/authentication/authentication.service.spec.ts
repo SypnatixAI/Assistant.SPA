@@ -8,6 +8,7 @@ import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider } from './authentication-provider';
 import { AuthenticationService } from './authentication.service';
+import { AuthenticationStatus } from './authentication-status';
 
 describe('AuthenticationService', () => {
   const session: AuthenticatedSession = {
@@ -70,7 +71,7 @@ describe('AuthenticationService', () => {
     // Then
     expect(authenticationProvider.recover).toHaveBeenCalledTimes(1);
     expect(authenticationApiService.authenticateUser).toHaveBeenCalledTimes(2);
-    expect(service.status()).toBe('authenticated');
+    expect(service.status()).toBe(AuthenticationStatus.Authenticated);
   });
 
   it('Given_ForbiddenSession_When_initializeIsCalled_Then_AccessIsMarkedAsForbidden', async () => {
@@ -85,7 +86,7 @@ describe('AuthenticationService', () => {
     await service.initialize();
 
     // Then
-    expect(service.status()).toBe('forbidden');
+    expect(service.status()).toBe(AuthenticationStatus.Forbidden);
     expect(service.session()).toBeNull();
     expect(technicalErrorService.report).not.toHaveBeenCalled();
   });
@@ -98,7 +99,7 @@ describe('AuthenticationService', () => {
     await service.initialize();
 
     // Then
-    expect(service.status()).toBe('unauthenticated');
+    expect(service.status()).toBe(AuthenticationStatus.Unauthenticated);
     expect(authenticationApiService.authenticateUser).not.toHaveBeenCalled();
   });
 
@@ -113,7 +114,7 @@ describe('AuthenticationService', () => {
     // Then
     expect(authenticationApiService.authenticateUser).toHaveBeenCalled();
     expect(service.session()).toEqual(session);
-    expect(service.status()).toBe('authenticated');
+    expect(service.status()).toBe(AuthenticationStatus.Authenticated);
   });
 
   it('Given_LocalLogin_When_loginIsCalled_Then_AssistantCoreSessionIsCreated', () => {
@@ -126,7 +127,7 @@ describe('AuthenticationService', () => {
     // Then
     expect(authenticationProvider.login).toHaveBeenCalled();
     expect(authenticationApiService.authenticateUser).toHaveBeenCalled();
-    expect(service.status()).toBe('authenticated');
+    expect(service.status()).toBe(AuthenticationStatus.Authenticated);
   });
 
   it('Given_AuthenticatedSession_When_logoutIsCalled_Then_SessionAndProviderAreCleared', async () => {
@@ -139,7 +140,7 @@ describe('AuthenticationService', () => {
     service.logout();
 
     // Then
-    expect(service.status()).toBe('unauthenticated');
+    expect(service.status()).toBe(AuthenticationStatus.Unauthenticated);
     expect(service.session()).toBeNull();
     expect(authenticationProvider.logout).toHaveBeenCalled();
   });
