@@ -3,7 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 
 export const APPLICATION_ROUTES = {
-  application: '/app',
+  chat: '/chat',
   login: '/login',
   technicalError: '/technical-error',
 } as const;
@@ -23,8 +23,8 @@ export class ApplicationNavigationService {
     return this.router.createUrlTree([APPLICATION_ROUTES.technicalError]);
   }
 
-  getApplicationAbsoluteUrl(): string {
-    return this.getAbsoluteUrl(APPLICATION_ROUTES.application);
+  getChatAbsoluteUrl(): string {
+    return this.getAbsoluteUrl(APPLICATION_ROUTES.chat);
   }
 
   getLoginAbsoluteUrl(): string {
@@ -43,8 +43,8 @@ export class ApplicationNavigationService {
     void this.router.navigateByUrl(APPLICATION_ROUTES.technicalError);
   }
 
-  navigateToApplication(): void {
-    void this.router.navigateByUrl(APPLICATION_ROUTES.application);
+  navigateToChat(): void {
+    void this.router.navigateByUrl(APPLICATION_ROUTES.chat);
   }
 
   reloadApplication(): void {

@@ -1,18 +1,39 @@
 <main class="page-shell">
   <section class="page-card" aria-labelledby="login-title">
     <p class="eyebrow">AssistantCore</p>
-    <h1 id="login-title">Connexion en cours…</h1>
-    <p role="status" aria-live="polite">
-      Redirection vers la connexion professionnelle Microsoft.
-    </p>
+    @if (isLocalAuthentication) {
+      <h1 id="login-title">Connexion locale</h1>
+      <p>
+        Cet environnement utilise une identité simulée et ne communique pas
+        avec Microsoft.
+      </p>
+      <button
+        class="login-button"
+        type="button"
+        [disabled]="status() === 'loading'"
+        (click)="login()"
+      >
+        Continuer comme administrateur local
+      </button>
+      @if (status() === 'loading') {
+        <p role="status" aria-live="polite">Connexion locale en cours…</p>
+      }
+    } @else {
+      <h1 id="login-title">Connexion en cours…</h1>
+      <p role="status" aria-live="polite">
+        Redirection vers la connexion professionnelle Microsoft.
+      </p>
+    }
 
     @if (errorMessage(); as message) {
       <p class="error-message" role="alert">{{ message }}</p>
     }
 
-    <p class="support-message">
-      Besoin d’aide?
-      <a href="mailto:support@assistantcore.com">Contactez le soutien.</a>
-    </p>
+    @if (!isLocalAuthentication) {
+      <p class="support-message">
+        Besoin d’aide?
+        <a href="mailto:support@assistantcore.com">Contactez le soutien.</a>
+      </p>
+    }
   </section>
 </main>

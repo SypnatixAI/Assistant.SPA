@@ -5,11 +5,11 @@ import { AuthenticatedSession } from '../../../../domain/auth/authenticated-sess
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  selector: 'app-application-page',
-  styleUrl: './application-page.css',
-  templateUrl: './application-page.html',
+  selector: 'app-chat-page',
+  styleUrl: './chat-page.css',
+  templateUrl: './chat-page.html',
 })
-export class ApplicationPage {
+export class ChatPage {
   readonly session: Signal<AuthenticatedSession | null>;
 
   constructor(private readonly authenticationService: AuthenticationService) {

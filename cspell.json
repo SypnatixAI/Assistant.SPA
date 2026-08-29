@@ -28,6 +28,7 @@
     "sessionStorage",
     "Tremblay",
     "TypeScript",
-    "Vitest"
+    "Vitest",
+    "wiremock"
   ]
 }

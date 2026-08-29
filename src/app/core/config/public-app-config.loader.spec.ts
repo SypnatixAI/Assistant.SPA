@@ -1,13 +1,36 @@
 import { loadPublicAppConfig } from './public-app-config.loader';
-import { PublicAppConfig } from './public-app-config';
+import { LaunchMode, PublicAppConfig } from './public-app-config';
 
 describe('loadPublicAppConfig', () => {
   const validConfig: PublicAppConfig = {
     apiBaseUrl: 'https://api.example.com',
+    authenticationUrl: '/local-auth/token',
+    launchMode: LaunchMode.Certification,
     entraClientId: 'public-client-id',
     entraAuthority: 'https://login.microsoftonline.com/organizations',
     entraScope: 'api://public-client-id/access_as_user',
   };
+
+  it('Given_ValidLocalConfig_When_loadPublicAppConfigIsCalled_Then_ConfigIsReturned', async () => {
+    // Given
+    const localConfig: PublicAppConfig = {
+      apiBaseUrl: '/',
+      authenticationUrl: '/local-auth/token',
+      entraAuthority: '',
+      entraClientId: '',
+      entraScope: '',
+      launchMode: LaunchMode.Local,
+    };
+    const fetchImplementation = jasmine
+      .createSpy<typeof fetch>('fetch')
+      .and.resolveTo(createResponse(true, 200, localConfig));
+
+    // When
+    const result = await loadPublicAppConfig(fetchImplementation);
+
+    // Then
+    expect(result).toEqual(localConfig);
+  });
 
   it('Given_ValidStaticConfig_When_loadPublicAppConfigIsCalled_Then_ConfigIsReturned', async () => {
     // Given
@@ -19,10 +42,9 @@ describe('loadPublicAppConfig', () => {
     const result = await loadPublicAppConfig(fetchImplementation);
 
     // Then
-    expect(fetchImplementation).toHaveBeenCalledWith(
-      '/assets/config/config.json',
-      { cache: 'no-store' },
-    );
+    expect(fetchImplementation).toHaveBeenCalledWith('/assets/config/config.json', {
+      cache: 'no-store',
+    });
     expect(result).toEqual(validConfig);
   });
 
@@ -51,9 +73,23 @@ describe('loadPublicAppConfig', () => {
     const action = loadPublicAppConfig(fetchImplementation);
 
     // Then
-    await expectAsync(action).toBeRejectedWithError(
-      'La configuration publique est invalide.',
+    await expectAsync(action).toBeRejectedWithError('La configuration publique est invalide.');
+  });
+
+  it('Given_LocalConfigWithoutTokenUrl_When_loadPublicAppConfigIsCalled_Then_ErrorIsThrown', async () => {
+    // Given
+    const fetchImplementation = jasmine.createSpy<typeof fetch>('fetch').and.resolveTo(
+      createResponse(true, 200, {
+        apiBaseUrl: '/',
+        launchMode: LaunchMode.Local,
+      }),
     );
+
+    // When
+    const action = loadPublicAppConfig(fetchImplementation);
+
+    // Then
+    await expectAsync(action).toBeRejectedWithError('La configuration publique est invalide.');
   });
 });
 

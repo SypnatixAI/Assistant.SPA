@@ -1,13 +1,42 @@
-<main class="page-shell">
-  <section class="page-card" aria-labelledby="technical-error-title">
-    <p class="eyebrow">AssistantCore</p>
-    <h1 id="technical-error-title">Une erreur technique est survenue</h1>
-    <p>
-      L’application ne peut pas continuer pour le moment. Rechargez la page ou
-      réessayez plus tard.
-    </p>
-    <button type="button" (click)="reloadApplication()">
-      Recharger l’application
-    </button>
+<main class="technical-error-page">
+  <section class="error-panel" aria-labelledby="technical-error-title">
+    <header class="brand">
+      <span class="brand-mark" aria-hidden="true">A</span>
+      <span>AssistantCore</span>
+    </header>
+
+    <div class="error-content">
+      <div class="status-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false">
+          <path
+            d="M12 8v4.75m0 3.25h.01M10.3 3.84 2.55 17.25A2 2 0 0 0 4.28 20h15.44a2 2 0 0 0 1.73-2.75L13.7 3.84a1.96 1.96 0 0 0-3.4 0Z"
+          />
+        </svg>
+      </div>
+
+      <p class="eyebrow">Service temporairement indisponible</p>
+      <h1 id="technical-error-title">
+        Une erreur technique empêche le chargement.
+      </h1>
+      <p class="error-description">
+        Votre espace de travail ne peut pas être chargé pour le moment.
+        Réessayez maintenant ou revenez dans quelques minutes.
+      </p>
+
+      <div class="actions">
+        <button type="button" (click)="reloadApplication()">
+          <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+            <path d="M20 11a8 8 0 1 0-2.34 5.66M20 4v7h-7" />
+          </svg>
+          Réessayer
+        </button>
+        <a href="mailto:support@assistantcore.com">Contacter le soutien</a>
+      </div>
+    </div>
+
+    <footer>
+      <span class="status-dot" aria-hidden="true"></span>
+      Aucun renseignement supplémentaire n’est requis de votre part.
+    </footer>
   </section>
 </main>

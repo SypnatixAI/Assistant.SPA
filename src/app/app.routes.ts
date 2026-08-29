@@ -12,13 +12,13 @@ export const routes: Routes = [
     title: 'Connexion | AssistantCore',
   },
   {
-    path: 'app',
+    path: 'chat',
     canActivate: [AuthGuard],
     loadComponent: () =>
-      import('./features/chat/pages/application-page/application-page').then(
-        ({ ApplicationPage }) => ApplicationPage,
+      import('./features/chat/pages/chat-page/chat-page').then(
+        ({ ChatPage }) => ChatPage,
       ),
-    title: 'AssistantCore',
+    title: 'Chat | AssistantCore',
   },
   { path: '', pathMatch: 'full', redirectTo: 'login' },
   {

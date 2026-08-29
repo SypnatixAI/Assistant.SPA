@@ -3,9 +3,9 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
-import { ApplicationPage } from './application-page';
+import { ChatPage } from './chat-page';
 
-describe('ApplicationPage', () => {
+describe('ChatPage', () => {
   const session: AuthenticatedSession = {
     organization: { id: 'organization-id', name: 'MetalPro' },
     roles: ['User'],
@@ -15,13 +15,13 @@ describe('ApplicationPage', () => {
       id: 'user-id',
     },
   };
-  let fixture: ComponentFixture<ApplicationPage>;
+  let fixture: ComponentFixture<ChatPage>;
   let logout: jasmine.Spy;
 
   beforeEach(async () => {
     logout = jasmine.createSpy('logout');
     await TestBed.configureTestingModule({
-      imports: [ApplicationPage],
+      imports: [ChatPage],
       providers: [
         {
           provide: AuthenticationService,
@@ -29,11 +29,11 @@ describe('ApplicationPage', () => {
         },
       ],
     }).compileComponents();
-    fixture = TestBed.createComponent(ApplicationPage);
+    fixture = TestBed.createComponent(ChatPage);
     fixture.detectChanges();
   });
 
-  it('Given_AuthenticatedSession_When_ApplicationPageIsDisplayed_Then_IdentityAndLogoutAreAvailable', () => {
+  it('Given_AuthenticatedSession_When_ChatPageIsDisplayed_Then_IdentityAndLogoutAreAvailable', () => {
     // Given
     const page: HTMLElement = fixture.nativeElement;
 

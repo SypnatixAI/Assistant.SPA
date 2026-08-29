@@ -9,7 +9,14 @@ describe('LoginPage', () => {
   const errorMessage = signal<string | null>(null);
   const isAuthenticated = signal(false);
   const status = signal('unauthenticated');
-  let applicationNavigationService: { navigateToApplication: jasmine.Spy };
+  let applicationNavigationService: { navigateToChat: jasmine.Spy };
+  let authenticationService: {
+    errorMessage: typeof errorMessage;
+    isAuthenticated: typeof isAuthenticated;
+    isLocalAuthentication: boolean;
+    login: jasmine.Spy;
+    status: typeof status;
+  };
   let login: jasmine.Spy;
 
   beforeEach(async () => {
@@ -18,7 +25,14 @@ describe('LoginPage', () => {
     status.set('unauthenticated');
     login = jasmine.createSpy('login');
     applicationNavigationService = {
-      navigateToApplication: jasmine.createSpy('navigateToApplication'),
+      navigateToChat: jasmine.createSpy('navigateToChat'),
+    };
+    authenticationService = {
+      errorMessage,
+      isAuthenticated,
+      isLocalAuthentication: false,
+      login,
+      status,
     };
 
     await TestBed.configureTestingModule({
@@ -26,12 +40,7 @@ describe('LoginPage', () => {
       providers: [
         {
           provide: AuthenticationService,
-          useValue: {
-            errorMessage,
-            isAuthenticated,
-            login,
-            status,
-          },
+          useValue: authenticationService,
         },
         {
           provide: ApplicationNavigationService,
@@ -41,7 +50,7 @@ describe('LoginPage', () => {
     }).compileComponents();
   });
 
-  it('Given_NoSession_When_ngOnInitIsCalled_Then_MicrosoftLoginStartsAutomatically', () => {
+  it('Given_NoSessionInMicrosoftMode_When_ngOnInitIsCalled_Then_MicrosoftLoginStartsAutomatically', () => {
     // Given
     const fixture = createFixture();
 
@@ -51,6 +60,21 @@ describe('LoginPage', () => {
     // Then
     expect(login).toHaveBeenCalled();
     expect(button).toBeNull();
+  });
+
+  it('Given_LocalAuthentication_When_loginIsCalled_Then_LoginStartsAfterUserAction', () => {
+    // Given
+    authenticationService.isLocalAuthentication = true;
+    const fixture = createFixture();
+    const button: HTMLButtonElement =
+      fixture.nativeElement.querySelector('button');
+
+    // When
+    button.click();
+
+    // Then
+    expect(login).toHaveBeenCalledTimes(1);
+    expect(button.textContent).toContain('administrateur local');
   });
 
   it('Given_LoginInProgress_When_ngOnInitIsCalled_Then_RedirectionStatusIsAccessible', () => {
@@ -81,7 +105,7 @@ describe('LoginPage', () => {
     expect(login).not.toHaveBeenCalled();
   });
 
-  it('Given_AuthenticatedSession_When_ngOnInitIsCalled_Then_ApplicationNavigationStarts', () => {
+  it('Given_AuthenticatedSession_When_ngOnInitIsCalled_Then_ChatNavigationStarts', () => {
     // Given
     isAuthenticated.set(true);
 
@@ -90,7 +114,7 @@ describe('LoginPage', () => {
 
     // Then
     expect(
-      applicationNavigationService.navigateToApplication,
+      applicationNavigationService.navigateToChat,
     ).toHaveBeenCalled();
     expect(login).not.toHaveBeenCalled();
   });

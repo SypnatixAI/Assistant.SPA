@@ -25,7 +25,7 @@ avec le gestionnaire Node.js de votre choix.
 ## Commandes locales
 
 ```bash
-npm start          # serveur local sur http://localhost:4200
+npm start          # serveur local avec authentification simulée
 npm run build      # build de production
 npm run test:ci    # tests Vitest en exécution unique
 npm run lint       # ESLint pour TypeScript et les templates Angular
@@ -36,14 +36,54 @@ npm run verify     # vérification complète du ticket
 ## Routes
 
 - `/login` : lance automatiquement la connexion professionnelle Microsoft;
-- `/app` : route affichée uniquement après une session AssistantCore valide;
+- `/chat` : espace de chat affiché uniquement après une session AssistantCore valide;
 - `/technical-error` : arrêt sécurisé après une erreur inattendue;
 - toute adresse inconnue : page 404.
 
-La garde de `/app` redirige vers `/login` lorsque la session n’est pas valide.
+La garde de `/chat` redirige vers `/login` lorsque la session n’est pas valide.
 La page de connexion envoie immédiatement l’utilisateur vers Microsoft, sans
 étape ni bouton intermédiaire. Une annulation ou un consentement refusé reste
 affiché sans relancer automatiquement la redirection.
+
+En mode local simulé, `/login` affiche plutôt un bouton permettant d’entrer
+comme administrateur local. Le JWT est demandé à WireMock seulement après ce
+clic, conservé uniquement en mémoire et ajouté aux appels `/api`. Un
+rechargement complet demande donc une nouvelle connexion locale.
+
+### Authentification locale simulée
+
+Le mode local par défaut ne communique pas avec Microsoft :
+
+```bash
+# Dans le dépôt backend
+bash scripts/start-local-wiremock.sh
+
+# Dans ce dépôt
+npm start
+```
+
+`npm start` charge `public/assets/config/config.json`, dont le `launchMode` est
+`Local` par défaut. Le proxy Angular
+transmet `/local-auth/token` à WireMock et `/api` au backend local.
+
+### Authentification Microsoft réelle en local
+
+Pour vérifier le vrai parcours MSAL, mettre le `launchMode` à `Certification`
+et renseigner les identifiants publics dans
+`public/assets/config/config.json`. Démarrer ensuite les services connectés et
+la SPA avec :
+
+```bash
+# Dans le dépôt backend
+bash scripts/start-local-live.sh
+
+# Dans ce dépôt
+npm start
+```
+
+Le fichier contient uniquement le client ID public de la SPA, l’autorité et le
+scope de l’API. Aucun client secret ne doit y être ajouté. L’URI de retour SPA
+Entra doit être exactement `http://localhost:4200/login`.
 
 ## Configuration Microsoft Entra
 
@@ -68,9 +108,9 @@ ne lit ni ne persiste le token.
 
 ## Configuration publique
 
-Avant de démarrer Angular, la SPA charge le fichier statique
-`/assets/config/config.json`. Il contient l’URL de l’API, le client ID Entra,
-l’autorité et le scope.
+Avant de démarrer Angular, la SPA charge toujours le fichier statique
+`/assets/config/config.json`. Sa propriété `launchMode` sélectionne
+l’authentification simulée (`Local`) ou Microsoft Entra (`Certification`).
 
 En local, `public/assets/config/config.json` utilise la racine `/`. Le serveur de
 développement transmet les appels `/api` à AssistantCore sur
@@ -92,10 +132,10 @@ secret, de client secret, de clé API ou d’adresse privée de production.
 ## Vérification manuelle de la connexion
 
 1. Remplacer les valeurs d’exemple dans `public/assets/config/config.json`.
-2. Démarrer AssistantCore et la SPA, puis ouvrir `/app` sans session pour
+2. Démarrer AssistantCore et la SPA, puis ouvrir `/chat` sans session pour
    vérifier la redirection automatique vers Microsoft.
 3. Terminer la connexion, la MFA ou le consentement demandé.
-4. Vérifier que `/app` apparaît seulement après la réponse valide de
+4. Vérifier que `/chat` apparaît seulement après la réponse valide de
    `GET /api/core/authenticateUser`.
 5. Recharger la page pour vérifier l’acquisition silencieuse du token.
 6. Utiliser `Se déconnecter` et vérifier le retour vers `/login`.

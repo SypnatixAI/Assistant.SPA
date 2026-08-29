@@ -1,19 +1,19 @@
 import { InteractionType } from '@azure/msal-browser';
 
-import { PublicAppConfig } from '../../config/public-app-config';
+import { LaunchMode, PublicAppConfig } from '../../config/public-app-config';
 import { ApplicationNavigationService } from '../navigation/application-navigation.service';
-import {
-  createMsalGuardConfig,
-  createMsalInterceptorConfig,
-} from './msal-config.factory';
+import { createMsalGuardConfig, createMsalInterceptorConfig } from './msal-config.factory';
 
 describe('MSAL configuration factories', () => {
   const publicAppConfig: PublicAppConfig = {
     apiBaseUrl: 'https://api.example.com',
+    authenticationUrl: '/local-auth/token',
+    launchMode: LaunchMode.Certification,
     entraAuthority: 'https://login.microsoftonline.com/organizations',
     entraClientId: 'spa-client-id',
     entraScope: 'api://api-client-id/access_as_user',
   };
+
   const applicationNavigationService = jasmine.createSpyObj<ApplicationNavigationService>(
     'ApplicationNavigationService',
     {
@@ -40,16 +40,11 @@ describe('MSAL configuration factories', () => {
     const expectedEndpoint = 'https://api.example.com/api/*';
 
     // When
-    const result = createMsalInterceptorConfig(
-      publicAppConfig,
-      applicationNavigationService,
-    );
+    const result = createMsalInterceptorConfig(publicAppConfig, applicationNavigationService);
 
     // Then
     expect(result.interactionType).toBe(InteractionType.Redirect);
     expect(result.protectedResourceMap.size).toBe(1);
-    expect(result.protectedResourceMap.get(expectedEndpoint)).toEqual([
-      publicAppConfig.entraScope,
-    ]);
+    expect(result.protectedResourceMap.get(expectedEndpoint)).toEqual([publicAppConfig.entraScope]);
   });
 });

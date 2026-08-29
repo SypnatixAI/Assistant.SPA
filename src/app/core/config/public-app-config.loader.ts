@@ -1,6 +1,5 @@
-import { PublicAppConfig } from './public-app-config';
-
-const PUBLIC_APP_CONFIG_PATH = '/assets/config/config.json';
+import { LaunchMode, PublicAppConfig } from './public-app-config';
+import { PUBLIC_APP_CONFIG_PATH } from './public-app-config-path';
 
 export async function loadPublicAppConfig(
   fetchImplementation: typeof fetch = fetch,
@@ -10,9 +9,7 @@ export async function loadPublicAppConfig(
   });
 
   if (!response.ok) {
-    throw new Error(
-      `Le chargement de la configuration publique a échoué (${response.status}).`,
-    );
+    throw new Error(`Le chargement de la configuration publique a échoué (${response.status}).`);
   }
 
   const config: unknown = await response.json();
@@ -30,11 +27,22 @@ function isPublicAppConfig(value: unknown): value is PublicAppConfig {
   }
 
   const config = value as Record<keyof PublicAppConfig, unknown>;
+  if (!isNonEmptyString(config.apiBaseUrl) || !isNonEmptyString(config.authenticationUrl)) {
+    return false;
+  }
 
-  return [
-    config.apiBaseUrl,
-    config.entraClientId,
-    config.entraAuthority,
-    config.entraScope,
-  ].every((property) => typeof property === 'string' && property.length > 0);
+  if (config.launchMode === LaunchMode.Local) {
+    return true;
+  }
+
+  return (
+    config.launchMode === LaunchMode.Certification &&
+    isNonEmptyString(config.entraClientId) &&
+    isNonEmptyString(config.entraAuthority) &&
+    isNonEmptyString(config.entraScope)
+  );
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.length > 0;
 }
