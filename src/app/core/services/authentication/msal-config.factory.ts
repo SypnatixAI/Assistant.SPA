@@ -1,7 +1,4 @@
-import {
-  MsalGuardConfiguration,
-  MsalInterceptorConfiguration,
-} from '@azure/msal-angular';
+import { MsalGuardConfiguration, MsalInterceptorConfiguration } from '@azure/msal-angular';
 import {
   BrowserCacheLocation,
   InteractionType,
@@ -24,8 +21,7 @@ export function createMsalInstance(
     auth: {
       authority: publicAppConfig.entraAuthority,
       clientId: publicAppConfig.entraClientId,
-      postLogoutRedirectUri:
-        applicationNavigationService.getLoginAbsoluteUrl(),
+      postLogoutRedirectUri: applicationNavigationService.getLoginAbsoluteUrl(),
       redirectUri: applicationNavigationService.getLoginAbsoluteUrl(),
     },
     cache: {
@@ -34,9 +30,7 @@ export function createMsalInstance(
   });
 }
 
-export function createMsalGuardConfig(
-  publicAppConfig: PublicAppConfig,
-): MsalGuardConfiguration {
+export function createMsalGuardConfig(publicAppConfig: PublicAppConfig): MsalGuardConfiguration {
   return {
     authRequest: {
       scopes: [publicAppConfig.entraScope],
@@ -50,15 +44,10 @@ export function createMsalInterceptorConfig(
   publicAppConfig: PublicAppConfig,
   applicationNavigationService: ApplicationNavigationService,
 ): MsalInterceptorConfiguration {
-  const apiBaseUrl = applicationNavigationService.getAbsoluteUrl(
-    publicAppConfig.apiBaseUrl,
-  );
-  const protectedResourceMap = new Map<string, string[]>();
-
-  protectedResourceMap.set(
-    `${apiBaseUrl.replace(/\/$/, '')}/api/*`,
-    [publicAppConfig.entraScope],
-  );
+  const apiBaseUrl = applicationNavigationService.getAbsoluteUrl(publicAppConfig.apiBaseUrl);
+  const protectedResourceMap = new Map<string, string[]>([
+    [`${apiBaseUrl.replace(/\/$/, '')}/api/*`, [publicAppConfig.entraScope]],
+  ]);
 
   return {
     interactionType: InteractionType.Redirect,

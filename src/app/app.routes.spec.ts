@@ -64,7 +64,7 @@ describe('Application routes', () => {
     const location = TestBed.inject(Location);
 
     // When
-    await harness.navigateByUrl('/app', LoginPage);
+    await harness.navigateByUrl('/chat', LoginPage);
 
     // Then
     expect(location.path()).toBe('/login');

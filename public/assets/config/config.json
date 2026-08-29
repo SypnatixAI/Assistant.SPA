@@ -1,5 +1,7 @@
 {
   "apiBaseUrl": "/",
+  "launchMode": "Local",
+  "authenticationUrl": "/local-auth/token",
   "entraClientId": "replace-with-public-client-id",
   "entraAuthority": "https://login.microsoftonline.com/common",
   "entraScope": "api://replace-with-api-client-id/access_as_user"

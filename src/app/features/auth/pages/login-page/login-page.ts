@@ -1,11 +1,15 @@
 import {
   ChangeDetectionStrategy,
   Component,
+  effect,
   OnInit,
   Signal,
 } from '@angular/core';
 
-import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
+import {
+  AuthenticationService,
+  AuthenticationStatus,
+} from '../../../../core/services/authentication/authentication.service';
 import { ApplicationNavigationService } from '../../../../core/services/navigation/application-navigation.service';
 
 @Component({
@@ -16,22 +20,37 @@ import { ApplicationNavigationService } from '../../../../core/services/navigati
 })
 export class LoginPage implements OnInit {
   readonly errorMessage: Signal<string | null>;
+  readonly isLocalAuthentication: boolean;
+  readonly status: Signal<AuthenticationStatus>;
 
   constructor(
     private readonly authenticationService: AuthenticationService,
     private readonly applicationNavigationService: ApplicationNavigationService,
   ) {
     this.errorMessage = authenticationService.errorMessage;
+    this.isLocalAuthentication = authenticationService.isLocalAuthentication;
+    this.status = authenticationService.status;
+    effect(() => {
+      if (authenticationService.isAuthenticated()) {
+        this.applicationNavigationService.navigateToChat();
+      }
+    });
   }
 
   ngOnInit(): void {
     if (this.authenticationService.isAuthenticated()) {
-      this.applicationNavigationService.navigateToApplication();
       return;
     }
 
-    if (this.authenticationService.status() === 'unauthenticated') {
+    if (
+      !this.isLocalAuthentication &&
+      this.authenticationService.status() === 'unauthenticated'
+    ) {
       this.authenticationService.login();
     }
+  }
+
+  login(): void {
+    this.authenticationService.login();
   }
 }

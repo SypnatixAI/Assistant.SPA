@@ -22,6 +22,23 @@ describe('TechnicalErrorPage', () => {
     fixture.detectChanges();
   });
 
+  it('Given_TechnicalFailure_When_PageIsRendered_Then_FullPageRecoveryOptionsAreDisplayed', () => {
+    // Given
+    const page: HTMLElement = fixture.nativeElement;
+
+    // When
+    const fullPageLayout = page.querySelector('main.technical-error-page');
+    const title = page.querySelector('#technical-error-title');
+    const supportLink = page.querySelector<HTMLAnchorElement>(
+      'a[href="mailto:support@assistantcore.com"]',
+    );
+
+    // Then
+    expect(fullPageLayout).not.toBeNull();
+    expect(title?.textContent).toContain('erreur technique');
+    expect(supportLink?.textContent).toContain('Contacter le soutien');
+  });
+
   it('Given_TechnicalFailure_When_reloadApplicationIsCalled_Then_ApplicationReloadStarts', () => {
     // Given
     const button: HTMLButtonElement =

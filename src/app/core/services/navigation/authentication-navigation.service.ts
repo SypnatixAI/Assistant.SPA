@@ -21,7 +21,7 @@ export class AuthenticationNavigationService {
   login(): Observable<void> {
     return this.msalService.loginRedirect({
       redirectStartPage:
-        this.applicationNavigationService.getApplicationAbsoluteUrl(),
+        this.applicationNavigationService.getChatAbsoluteUrl(),
       scopes: [this.publicAppConfig.entraScope],
     });
   }
@@ -30,7 +30,7 @@ export class AuthenticationNavigationService {
     return this.msalService.acquireTokenRedirect({
       account,
       redirectStartPage:
-        this.applicationNavigationService.getApplicationAbsoluteUrl(),
+        this.applicationNavigationService.getChatAbsoluteUrl(),
       scopes: [this.publicAppConfig.entraScope],
     });
   }
