@@ -1,0 +1,43 @@
+.message {
+  display: grid;
+  grid-template-columns: 2rem minmax(0, 1fr);
+  gap: 0.85rem;
+  align-items: start;
+}
+
+.message__avatar {
+  width: 2rem;
+  height: 2rem;
+  display: grid;
+  place-items: center;
+  position: relative;
+  border-radius: 0.58rem;
+  color: #fff;
+  background: var(--color-primary);
+  font-size: 0.76rem;
+  font-weight: 750;
+}
+
+.message__avatar span {
+  position: absolute;
+  right: 0.27rem;
+  bottom: 0.27rem;
+  width: 0.27rem;
+  height: 0.27rem;
+  border: 1.5px solid var(--color-primary);
+  border-radius: 50%;
+  background: #82d3c7;
+}
+
+.message__body {
+  min-width: 0;
+  padding-top: 0.18rem;
+}
+
+p {
+  margin: 0;
+  color: #253141;
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}

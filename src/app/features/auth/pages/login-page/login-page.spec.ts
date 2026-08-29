@@ -2,13 +2,16 @@ import { signal } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
 import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
+import { AuthenticationStatus } from '../../../../core/services/authentication/authentication-status';
 import { ApplicationNavigationService } from '../../../../core/services/navigation/application-navigation.service';
 import { LoginPage } from './login-page';
 
 describe('LoginPage', () => {
   const errorMessage = signal<string | null>(null);
   const isAuthenticated = signal(false);
-  const status = signal('unauthenticated');
+  const status = signal<AuthenticationStatus>(
+    AuthenticationStatus.Unauthenticated,
+  );
   let applicationNavigationService: { navigateToChat: jasmine.Spy };
   let authenticationService: {
     errorMessage: typeof errorMessage;
@@ -22,7 +25,7 @@ describe('LoginPage', () => {
   beforeEach(async () => {
     errorMessage.set(null);
     isAuthenticated.set(false);
-    status.set('unauthenticated');
+    status.set(AuthenticationStatus.Unauthenticated);
     login = jasmine.createSpy('login');
     applicationNavigationService = {
       navigateToChat: jasmine.createSpy('navigateToChat'),
@@ -79,7 +82,7 @@ describe('LoginPage', () => {
 
   it('Given_LoginInProgress_When_ngOnInitIsCalled_Then_RedirectionStatusIsAccessible', () => {
     // Given
-    status.set('loading');
+    status.set(AuthenticationStatus.Loading);
 
     // When
     const fixture = createFixture();
@@ -94,7 +97,7 @@ describe('LoginPage', () => {
   it('Given_LoginFailure_When_ngOnInitIsCalled_Then_ErrorIsAnnouncedWithoutRedirectLoop', () => {
     // Given
     errorMessage.set('La connexion a échoué.');
-    status.set('error');
+    status.set(AuthenticationStatus.Error);
 
     // When
     const fixture = createFixture();

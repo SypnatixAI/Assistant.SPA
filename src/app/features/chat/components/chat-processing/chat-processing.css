@@ -1,0 +1,44 @@
+.processing {
+  min-height: 2rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding-left: 2.85rem;
+}
+
+.processing > span:not(.visually-hidden) {
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 50%;
+  background: var(--color-primary);
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.processing > span:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.processing > span:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes pulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: translateY(0);
+  }
+
+  30% {
+    opacity: 1;
+    transform: translateY(-0.2rem);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .processing > span:not(.visually-hidden) {
+    animation: none;
+    opacity: 0.7;
+  }
+}

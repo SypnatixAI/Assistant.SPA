@@ -1,0 +1,12 @@
+<section class="message-list" aria-label="Messages" aria-live="polite">
+  @for (message of messages(); track message.id) {
+    @if (message.role === "assistant") {
+      <app-assistant-message [message]="message" />
+    } @else {
+      <app-user-message [content]="message.content" />
+    }
+  }
+  @if (isProcessing()) {
+    <app-chat-processing />
+  }
+</section>

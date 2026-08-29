@@ -1,0 +1,9 @@
+<article class="message">
+  <div class="message__avatar" aria-hidden="true">A<span></span></div>
+  <div class="message__body">
+    <h2 class="visually-hidden">Message d’AssistantCore</h2>
+    <p>{{ message().content }}</p>
+    <app-chat-sources [sources]="message().sources" />
+    <app-chat-warnings [warnings]="message().warnings" />
+  </div>
+</article>

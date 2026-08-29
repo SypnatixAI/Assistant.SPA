@@ -1,14 +1,92 @@
-<main class="page-shell">
-  <section class="page-card" aria-labelledby="chat-title">
-    <h1 id="chat-title">Chat AssistantCore</h1>
-    @if (session(); as currentSession) {
-      <p>
-        Connecté comme {{ currentSession.user.displayName }} pour
-        {{ currentSession.organization.name }}.
-      </p>
+@if (session(); as currentSession) {
+  <main class="chat-shell">
+    <div class="desktop-sidebar" [attr.inert]="isNavigationOpen() ? '' : null">
+      <app-conversation-sidebar
+        [conversations]="conversations()"
+        [selectedConversationId]="selectedConversationId()"
+        [session]="currentSession"
+        [status]="sidebarStatus()"
+        (conversationSelected)="selectConversation($event)"
+        (logoutRequested)="logout()"
+        (newConversationRequested)="startNewConversation()"
+      />
+    </div>
+
+    @if (isNavigationOpen()) {
+      <div
+        class="mobile-navigation"
+        role="presentation"
+        (click)="closeNavigationFromBackdrop($event)"
+        (keydown.escape)="closeNavigation()"
+      >
+        <div
+          #navigationPanel
+          class="mobile-navigation__panel"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Conversations"
+        >
+          <app-conversation-sidebar
+            [conversations]="conversations()"
+            [selectedConversationId]="selectedConversationId()"
+            [session]="currentSession"
+            [status]="sidebarStatus()"
+            (closed)="closeNavigation()"
+            (conversationSelected)="selectConversation($event)"
+            (logoutRequested)="logout()"
+            (newConversationRequested)="startNewConversation()"
+          />
+        </div>
+      </div>
     }
-    <button class="logout-button" type="button" (click)="logout()">
-      Se déconnecter
-    </button>
-  </section>
-</main>
+
+    <section
+      class="conversation-area"
+      aria-label="Conversation AssistantCore"
+      [attr.inert]="isNavigationOpen() ? '' : null"
+    >
+      <header class="conversation-header">
+        <button
+          #navigationButton
+          class="navigation-trigger"
+          type="button"
+          aria-label="Ouvrir les conversations"
+          [attr.aria-expanded]="isNavigationOpen()"
+          (click)="openNavigation()"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
+        <div class="conversation-heading">
+          <span>AssistantCore</span>
+          <strong>{{ conversationTitle() }}</strong>
+        </div>
+        <div class="workspace-status" aria-label="Espace de travail sécurisé">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 3 5.5 5.7v5.5c0 4.2 2.6 7.9 6.5 9.8 3.9-1.9 6.5-5.6 6.5-9.8V5.7L12 3Z" />
+            <path d="m9.2 12 1.8 1.8 3.9-4" />
+          </svg>
+          <span><strong>Espace sécurisé</strong>{{ currentSession.organization.name }}</span>
+        </div>
+      </header>
+
+      <div class="conversation-scroll">
+        @if (messages().length === 0) {
+          <app-chat-welcome
+            [displayName]="currentSession.user.displayName"
+            [organizationName]="currentSession.organization.name"
+            (questionSelected)="useSuggestedQuestion($event)"
+          />
+        } @else {
+          <app-chat-message-list [isProcessing]="isProcessing()" [messages]="messages()" />
+        }
+      </div>
+
+      <footer class="composer-shell">
+        <app-chat-composer [disabled]="isProcessing()" (messageSubmitted)="submitMessage($event)" />
+        <p>Les réponses peuvent contenir des erreurs. Vérifiez les informations importantes.</p>
+      </footer>
+    </section>
+  </main>
+}

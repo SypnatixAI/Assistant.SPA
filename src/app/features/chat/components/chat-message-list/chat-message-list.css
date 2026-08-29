@@ -1,0 +1,7 @@
+.message-list {
+  width: min(100%, 50rem);
+  display: grid;
+  gap: 2rem;
+  margin: 0 auto;
+  padding: 2.25rem 1.25rem 1.5rem;
+}

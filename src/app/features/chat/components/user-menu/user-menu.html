@@ -1,0 +1,26 @@
+<div class="user-menu">
+  <button
+    #trigger
+    class="user-menu__trigger"
+    type="button"
+    aria-haspopup="menu"
+    [attr.aria-expanded]="isOpen()"
+    (click)="toggle()"
+  >
+    <span class="user-menu__avatar" aria-hidden="true">{{ initials() }}</span>
+    <span class="user-menu__identity">
+      <strong>{{ session().user.displayName }}</strong>
+      <span>{{ session().organization.name }}</span>
+    </span>
+    <span aria-hidden="true">⌄</span>
+  </button>
+
+  @if (isOpen()) {
+    <div class="user-menu__popover" role="menu">
+      <p class="user-menu__name">{{ session().user.displayName }}</p>
+      <p>{{ session().user.email }}</p>
+      <p>{{ session().organization.name }}</p>
+      <button type="button" role="menuitem" (click)="requestLogout()">Se déconnecter</button>
+    </div>
+  }
+</div>

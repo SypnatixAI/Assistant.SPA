@@ -1,0 +1,7 @@
+@if (warnings().length > 0) {
+  <aside class="warnings" aria-label="Avertissements">
+    @for (warning of warnings(); track warning) {
+      <p><span aria-hidden="true">!</span>{{ warning }}</p>
+    }
+  </aside>
+}

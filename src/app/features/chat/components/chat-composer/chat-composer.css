@@ -1,0 +1,100 @@
+.composer {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.65rem;
+  padding: 0.55rem;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 0.9rem;
+  background: var(--color-surface);
+  box-shadow: var(--shadow-composer);
+  transition:
+    border-color 140ms ease,
+    box-shadow 140ms ease;
+}
+
+.composer:focus-within {
+  border-color: var(--color-focus);
+  box-shadow:
+    0 0 0 3px rgb(12 113 138 / 12%),
+    var(--shadow-composer);
+}
+
+textarea {
+  min-height: 2.9rem;
+  max-height: 10rem;
+  padding: 0.72rem 0.75rem;
+  border: 0;
+  color: var(--color-text);
+  background: transparent;
+  font: inherit;
+  line-height: 1.45;
+  resize: none;
+}
+
+textarea:focus-visible {
+  outline: 0;
+}
+
+button {
+  width: 2.75rem;
+  height: 2.75rem;
+  align-self: start;
+  border: 0;
+  border-radius: 0.7rem;
+  color: #fff;
+  background: var(--color-primary);
+  font-weight: 800;
+  cursor: pointer;
+}
+
+button svg {
+  width: 1.15rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+button:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.send-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.composer__meta {
+  grid-column: 1 / -1;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0 0.45rem 0.1rem;
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+
+.is-invalid,
+[role='alert'] {
+  color: var(--color-danger);
+}
+
+@media (max-width: 36rem) {
+  #message-hint {
+    display: none;
+  }
+
+  .composer__meta {
+    justify-content: flex-end;
+  }
+}

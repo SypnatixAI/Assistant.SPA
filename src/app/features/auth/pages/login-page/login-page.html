@@ -10,12 +10,12 @@
       <button
         class="login-button"
         type="button"
-        [disabled]="status() === 'loading'"
+        [disabled]="status() === AuthenticationStatus.Loading"
         (click)="login()"
       >
         Continuer comme administrateur local
       </button>
-      @if (status() === 'loading') {
+      @if (status() === AuthenticationStatus.Loading) {
         <p role="status" aria-live="polite">Connexion locale en cours…</p>
       }
     } @else {

@@ -1,0 +1,78 @@
+<aside class="sidebar" aria-label="Conversations">
+  <div class="sidebar__header">
+    <a class="brand" href="/chat" aria-label="AssistantCore, accueil">
+      <span class="brand__mark" aria-hidden="true">A<span></span></span>
+      <span class="brand__name"
+        ><strong>AssistantCore</strong><small>Assistant d’entreprise</small></span
+      >
+    </a>
+    <button
+      #closeButton
+      class="mobile-close"
+      type="button"
+      aria-label="Fermer les conversations"
+      (click)="closed.emit()"
+    >
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18" /></svg>
+    </button>
+  </div>
+
+  <button class="new-conversation" type="button" (click)="newConversationRequested.emit()">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+    Nouvelle conversation
+  </button>
+
+  <div class="conversation-section">
+    <h2>Récentes</h2>
+    @switch (status()) {
+      @case ('loading') {
+        <p class="sidebar-state" role="status">Chargement des conversations…</p>
+      }
+      @case ('error') {
+        <div class="sidebar-state" role="alert">
+          <p>{{ errorMessage() }}</p>
+          <button type="button" (click)="retryRequested.emit()">Réessayer</button>
+        </div>
+      }
+      @default {
+        @if (conversations().length === 0) {
+          <p class="sidebar-state">Vos conversations apparaîtront ici.</p>
+        } @else {
+          <nav aria-label="Historique des conversations">
+            <ul>
+              @for (conversation of conversations(); track conversation.id) {
+                <li>
+                  <button
+                    type="button"
+                    [class.is-selected]="conversation.id === selectedConversationId()"
+                    [attr.aria-current]="
+                      conversation.id === selectedConversationId() ? 'page' : null
+                    "
+                    (click)="conversationSelected.emit(conversation.id)"
+                  >
+                    <strong>{{ conversation.title }}</strong>
+                    @if (conversation.preview) {
+                      <span>{{ conversation.preview }}</span>
+                    }
+                  </button>
+                </li>
+              }
+            </ul>
+          </nav>
+          @if (hasNextPage()) {
+            <button
+              class="load-more"
+              type="button"
+              [disabled]="isLoadingNextPage()"
+              (click)="nextPageRequested.emit()"
+            >
+              {{ isLoadingNextPage() ? 'Chargement…' : 'Afficher plus' }}
+            </button>
+          }
+        }
+      }
+    }
+  </div>
+
+  <app-user-menu [session]="session()" (logoutRequested)="logoutRequested.emit()" />
+</aside>

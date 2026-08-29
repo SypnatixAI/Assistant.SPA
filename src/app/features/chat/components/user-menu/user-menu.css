@@ -1,0 +1,90 @@
+.user-menu {
+  position: relative;
+}
+
+.user-menu__trigger {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem;
+  min-height: 2.75rem;
+  border: 0;
+  border-radius: 0.75rem;
+  color: inherit;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-menu__trigger:hover {
+  background: var(--color-sidebar-hover);
+}
+
+.user-menu__avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  border-radius: 50%;
+  color: #fff;
+  background: #2c4350;
+  font-weight: 700;
+}
+
+.user-menu__identity {
+  min-width: 0;
+  display: grid;
+  flex: 1;
+  gap: 0.1rem;
+}
+
+.user-menu__identity strong,
+.user-menu__identity span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.user-menu__identity span,
+.user-menu__popover p {
+  color: var(--color-text-muted);
+  font-size: 0.8rem;
+}
+
+.user-menu__popover {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 0.5rem);
+  left: 0;
+  z-index: 4;
+  padding: 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-medium);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.user-menu__popover p {
+  margin: 0 0 0.25rem;
+  overflow-wrap: anywhere;
+}
+
+.user-menu__popover .user-menu__name {
+  color: var(--color-text);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.user-menu__popover button {
+  width: 100%;
+  min-height: 2.75rem;
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.55rem;
+  color: var(--color-danger);
+  background: var(--color-surface);
+  cursor: pointer;
+}

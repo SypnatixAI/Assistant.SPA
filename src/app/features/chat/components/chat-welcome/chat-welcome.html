@@ -1,0 +1,23 @@
+<section class="welcome" aria-labelledby="welcome-title">
+  <span class="welcome__mark" aria-hidden="true">A<span></span></span>
+  <p class="welcome__eyebrow">Assistant de votre organisation</p>
+  <h1 id="welcome-title">Que souhaitez-vous savoir aujourd’hui, {{ firstName() }} ?</h1>
+  <p class="welcome__intro">
+    Interrogez les documents de {{ organizationName() }} auxquels vous avez accès.
+  </p>
+  <div class="suggestions" aria-label="Exemples de questions">
+    @for (question of questions(); track question) {
+      <button type="button" (click)="questionSelected.emit(question)">
+        <span>{{ question }}</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 18 6-6-6-6" /></svg>
+      </button>
+    }
+  </div>
+  <p class="welcome__trust">
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="m8.5 12 2.2 2.2 4.8-5" />
+      <path d="M12 3 5.5 5.7v5.5c0 4.2 2.6 7.9 6.5 9.8 3.9-1.9 6.5-5.6 6.5-9.8V5.7L12 3Z" />
+    </svg>
+    Les réponses respectent vos droits d’accès.
+  </p>
+</section>
