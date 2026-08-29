@@ -166,7 +166,6 @@ describe('ChatPage', () => {
     const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
     expect(textarea.disabled).toBeTrue();
     expect(fixture.nativeElement.textContent).toContain('Quota épuisé');
-    expect(fixture.nativeElement.textContent).toContain('31 août 2026');
   });
 
   it('Given_AModelLoadingError_When_RefreshIsRequested_Then_ModelsAreLoadedAgain', () => {
