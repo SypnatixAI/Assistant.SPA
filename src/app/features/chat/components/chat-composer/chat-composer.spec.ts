@@ -26,6 +26,22 @@ describe('ChatComposer', () => {
     expect(component.messageControl.value).toBe('');
   });
 
+  it('Given_AValidQuestion_When_handleSubmit_Then_PreventsNavigationAndSubmits', () => {
+    // Given
+    const component = fixture.componentInstance;
+    const emittedMessages: string[] = [];
+    const event = new SubmitEvent('submit', { cancelable: true });
+    component.messageSubmitted.subscribe((message) => emittedMessages.push(message));
+    component.messageControl.setValue('Question sur plusieurs lignes');
+
+    // When
+    component.handleSubmit(event);
+
+    // Then
+    expect(event.defaultPrevented).toBeTrue();
+    expect(emittedMessages).toEqual(['Question sur plusieurs lignes']);
+  });
+
   it('Given_ShiftEnter_When_handleKeydown_Then_DoesNotSubmitTheQuestion', () => {
     // Given
     const component = fixture.componentInstance;
@@ -55,5 +71,33 @@ describe('ChatComposer', () => {
     // Then
     expect(emittedMessages).toEqual([]);
     expect(component.messageControl.hasError('maxlength')).toBeTrue();
+  });
+
+  it('Given_AMultilineQuestion_When_resizeMessageInputIsCalled_Then_EditorGrowsWithContent', () => {
+    // Given
+    const component = fixture.componentInstance;
+    const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+    Object.defineProperty(textarea, 'scrollHeight', { configurable: true, value: 136 });
+
+    // When
+    component.resizeMessageInput();
+
+    // Then
+    expect(textarea.style.height).toBe('136px');
+    expect(textarea.style.overflowY).toBe('hidden');
+  });
+
+  it('Given_AQuestionTallerThanTheEditor_When_resizeMessageInputIsCalled_Then_HeightIsCapped', () => {
+    // Given
+    const component = fixture.componentInstance;
+    const textarea: HTMLTextAreaElement = fixture.nativeElement.querySelector('textarea');
+    Object.defineProperty(textarea, 'scrollHeight', { configurable: true, value: 480 });
+
+    // When
+    component.resizeMessageInput();
+
+    // Then
+    expect(textarea.style.height).toBe('224px');
+    expect(textarea.style.overflowY).toBe('auto');
   });
 });

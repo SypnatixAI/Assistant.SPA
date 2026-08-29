@@ -1,4 +1,4 @@
-<form class="composer" (ngSubmit)="submit()">
+<form class="composer" (submit)="handleSubmit($event)">
   <label class="visually-hidden" for="chat-message">Votre question</label>
   <textarea
     #messageInput
@@ -12,23 +12,38 @@
         ? 'message-error message-counter'
         : 'message-hint message-counter'
     "
+    (input)="resizeMessageInput()"
     (keydown)="handleKeydown($event)"
   ></textarea>
-  <button type="submit" [disabled]="messageControl.invalid || messageControl.disabled">
-    <span class="send-label">Envoyer</span>
-    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" /></svg>
-  </button>
-  <div class="composer__meta">
-    @if (messageControl.hasError('maxlength')) {
-      <span id="message-error" role="alert">
-        La question dépasse {{ maximumLength }} caractères.
-      </span>
-    } @else {
-      <span id="message-hint">Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne</span>
-    }
-    <span id="message-counter" [class.is-invalid]="messageControl.hasError('maxlength')">
-      {{ messageControl.value.length | number: '1.0-0' }} /
-      {{ maximumLength | number: '1.0-0' }}
-    </span>
+  <div class="composer__footer">
+    <app-model-selector
+      [models]="models()"
+      [selectedModelId]="selectedModelId()"
+      [isLoading]="isModelLoading()"
+      [error]="modelError()"
+      (modelSelected)="modelSelected.emit($event)"
+      (refreshRequested)="modelRefreshRequested.emit()"
+    />
+    <div class="composer__actions">
+      <div class="composer__meta">
+        @if (messageControl.hasError('maxlength')) {
+          <span id="message-error" role="alert">
+            La question dépasse {{ maximumLength }} caractères.
+          </span>
+        } @else {
+          <span id="message-hint">Entrée pour envoyer · Maj+Entrée pour une nouvelle ligne</span>
+        }
+        <span id="message-counter" [class.is-invalid]="messageControl.hasError('maxlength')">
+          {{ messageControl.value.length | number: '1.0-0' }} /
+          {{ maximumLength | number: '1.0-0' }}
+        </span>
+      </div>
+      <button type="submit" [disabled]="messageControl.invalid || messageControl.disabled">
+        <span class="send-label">Envoyer</span>
+        <svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 19V5M6.5 10.5 12 5l5.5 5.5" />
+        </svg>
+      </button>
+    </div>
   </div>
 </form>

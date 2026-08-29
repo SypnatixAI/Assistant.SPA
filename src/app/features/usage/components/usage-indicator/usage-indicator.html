@@ -1,0 +1,17 @@
+<section class="usage-indicator" [class.usage-indicator--exhausted]="isExhausted()">
+  @if (isLoading()) {
+    <span role="status">Chargement du quota…</span>
+  } @else if (error(); as errorMessage) {
+    <div class="usage-indicator__error" role="alert">
+      <span>{{ errorMessage }}</span>
+      <button type="button" (click)="refreshRequested.emit()">Réessayer</button>
+    </div>
+  } @else if (isExhausted()) {
+    @if (usage(); as currentUsage) {
+      <p role="alert">
+        Quota épuisé. L’envoi sera de nouveau disponible le
+        {{ formatRenewalDate(currentUsage.periodEndsAt) }}.
+      </p>
+    }
+  }
+</section>
