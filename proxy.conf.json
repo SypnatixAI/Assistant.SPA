@@ -1,4 +1,12 @@
 {
+  "/api/models": {
+    "target": "https://localhost:9443",
+    "secure": false
+  },
+  "/api/usage": {
+    "target": "https://localhost:9443",
+    "secure": false
+  },
   "/api": {
     "target": "https://localhost:7292",
     "secure": false

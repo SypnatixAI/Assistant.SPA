@@ -10,18 +10,28 @@ import {
 import { DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
+import { AvailableModel } from '../../../../domain/models/model-catalog';
+import { ModelSelector } from '../../../models/components/model-selector/model-selector';
+
 const MAXIMUM_MESSAGE_LENGTH = 4_000;
+const MAXIMUM_MESSAGE_INPUT_HEIGHT = 224;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, ReactiveFormsModule],
+  imports: [DecimalPipe, ModelSelector, ReactiveFormsModule],
   selector: 'app-chat-composer',
   styleUrl: './chat-composer.css',
   templateUrl: './chat-composer.html',
 })
 export class ChatComposer {
   readonly disabled = input(false);
+  readonly models = input<readonly AvailableModel[]>([]);
+  readonly selectedModelId = input<string | null>(null);
+  readonly isModelLoading = input(false);
+  readonly modelError = input<string | null>(null);
   readonly messageSubmitted = output<string>();
+  readonly modelSelected = output<string>();
+  readonly modelRefreshRequested = output<void>();
   readonly maximumLength = MAXIMUM_MESSAGE_LENGTH;
   readonly messageControl = new FormControl('', {
     nonNullable: true,
@@ -47,6 +57,22 @@ export class ChatComposer {
   setDraft(message: string): void {
     this.messageControl.setValue(message);
     this.focus();
+    queueMicrotask(() => this.resizeMessageInput());
+  }
+
+  resizeMessageInput(): void {
+    const messageInput = this.messageInput()?.nativeElement;
+    if (!messageInput) {
+      return;
+    }
+
+    messageInput.style.height = 'auto';
+    messageInput.style.height = `${Math.min(
+      messageInput.scrollHeight,
+      MAXIMUM_MESSAGE_INPUT_HEIGHT,
+    )}px`;
+    messageInput.style.overflowY =
+      messageInput.scrollHeight > MAXIMUM_MESSAGE_INPUT_HEIGHT ? 'auto' : 'hidden';
   }
 
   handleKeydown(event: KeyboardEvent): void {
@@ -54,6 +80,11 @@ export class ChatComposer {
       return;
     }
 
+    event.preventDefault();
+    this.submit();
+  }
+
+  handleSubmit(event: SubmitEvent): void {
     event.preventDefault();
     this.submit();
   }
@@ -67,5 +98,6 @@ export class ChatComposer {
 
     this.messageSubmitted.emit(message);
     this.messageControl.reset();
+    queueMicrotask(() => this.resizeMessageInput());
   }
 }

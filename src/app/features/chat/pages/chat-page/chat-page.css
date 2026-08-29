@@ -103,6 +103,19 @@
   background: var(--color-surface);
 }
 
+.usage-toolbar {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.4rem;
+}
+
+.send-error {
+  margin: 0 0 0.5rem;
+  color: var(--color-danger);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
 .composer-shell > p {
   margin: 0.45rem 0 0;
   color: var(--color-text-muted);
@@ -171,6 +184,12 @@
   .composer-shell {
     padding-right: 0.75rem;
     padding-left: 0.75rem;
+  }
+}
+
+@media (max-width: 40rem) {
+  .usage-toolbar {
+    justify-content: flex-start;
   }
 }
 

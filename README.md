@@ -63,8 +63,11 @@ npm start
 ```
 
 `npm start` charge `public/assets/config/config.json`, dont le `launchMode` est
-`Local` par défaut. Le proxy Angular
-transmet `/local-auth/token` à WireMock et `/api` au backend local.
+`Local` par défaut. Le proxy Angular transmet `/local-auth/token` à WireMock et
+`/api` au backend local. Tant que les endpoints de catalogue et de quota ne
+sont pas disponibles dans le backend, il transmet précisément `/api/models` et
+`/api/usage` à WireMock. Les autres routes `/api` continuent d’être traitées par
+AssistantCore.
 
 ### Authentification Microsoft réelle en local
 
