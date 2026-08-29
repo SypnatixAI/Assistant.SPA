@@ -9,7 +9,7 @@ describe('AuthGuard', () => {
   it('Given_TechnicalFailure_When_canActivateIsCalled_Then_TechnicalErrorPageIsReturned', () => {
     // Given
     const technicalErrorUrl = {} as UrlTree;
-    const authenticationService = createAuthenticationService(false);
+    const authenticationService = createAuthenticationService(false, 'error');
     const technicalErrorService = createTechnicalErrorService(true);
     const applicationNavigationService = createNavigationService(
       {} as UrlTree,
@@ -26,6 +26,22 @@ describe('AuthGuard', () => {
 
     // Then
     expect(result).toBe(technicalErrorUrl);
+  });
+
+  it('Given_ForbiddenSession_When_canActivateIsCalled_Then_AccessDeniedPageIsReturned', () => {
+    // Given
+    const accessDeniedUrl = {} as UrlTree;
+    const guard = new AuthGuard(
+      createAuthenticationService(false, 'forbidden'),
+      createTechnicalErrorService(false),
+      createNavigationService({} as UrlTree, {} as UrlTree, accessDeniedUrl),
+    );
+
+    // When
+    const result = guard.canActivate();
+
+    // Then
+    expect(result).toBe(accessDeniedUrl);
   });
 
   it('Given_ValidSession_When_canActivateIsCalled_Then_AccessIsGranted', () => {
@@ -46,9 +62,13 @@ describe('AuthGuard', () => {
 
 function createAuthenticationService(
   authenticated: boolean,
+  status: 'authenticated' | 'unauthenticated' | 'forbidden' | 'error' = authenticated
+    ? 'authenticated'
+    : 'unauthenticated',
 ): AuthenticationService {
   return {
     isAuthenticated: () => authenticated,
+    status: () => status,
   } as unknown as AuthenticationService;
 }
 
@@ -63,8 +83,10 @@ function createTechnicalErrorService(
 function createNavigationService(
   loginUrl: UrlTree,
   technicalErrorUrl: UrlTree,
+  accessDeniedUrl: UrlTree = {} as UrlTree,
 ): ApplicationNavigationService {
   return {
+    createAccessDeniedUrlTree: () => accessDeniedUrl,
     createLoginUrlTree: () => loginUrl,
     createTechnicalErrorUrlTree: () => technicalErrorUrl,
   } as unknown as ApplicationNavigationService;

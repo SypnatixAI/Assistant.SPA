@@ -1,7 +1,17 @@
 import { computed, Inject, Injectable, signal } from '@angular/core';
-import { catchError, defaultIfEmpty, lastValueFrom, of, switchMap, tap } from 'rxjs';
+import {
+  catchError,
+  defaultIfEmpty,
+  lastValueFrom,
+  Observable,
+  of,
+  switchMap,
+  tap,
+  throwError,
+} from 'rxjs';
 
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
+import { ApiError } from '../../../domain/errors/api-error';
 import { LaunchMode } from '../../config/public-app-config';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
@@ -11,7 +21,12 @@ import {
   isRecoverableAuthenticationError,
 } from './authentication-error';
 
-export type AuthenticationStatus = 'loading' | 'authenticated' | 'unauthenticated' | 'error';
+export type AuthenticationStatus =
+  | 'loading'
+  | 'authenticated'
+  | 'unauthenticated'
+  | 'forbidden'
+  | 'error';
 
 interface AuthenticationState {
   readonly status: AuthenticationStatus;
@@ -84,7 +99,9 @@ export class AuthenticationService {
       .subscribe({ error: (error: unknown) => this.handleError(error) });
   }
 
-  private initializeAssistantCoreSession() {
+  private initializeAssistantCoreSession(
+    canRecover = true,
+  ): Observable<AuthenticatedSession | undefined> {
     return this.authenticationApiService.authenticateUser().pipe(
       tap((session) => {
         this.state.set({
@@ -93,12 +110,25 @@ export class AuthenticationService {
           status: 'authenticated',
         });
       }),
+      catchError((error: unknown) => {
+        if (!(error instanceof ApiError) || error.status !== 401 || !canRecover) {
+          return throwError(() => error);
+        }
+
+        return this.authenticationProvider.recover().pipe(
+          switchMap((hasAccessToken) =>
+            hasAccessToken
+              ? this.initializeAssistantCoreSession(false)
+              : this.setUnauthenticated(),
+          ),
+        );
+      }),
     );
   }
 
-  private setUnauthenticated() {
+  private setUnauthenticated(errorMessage: string | null = null) {
     this.state.set({
-      errorMessage: null,
+      errorMessage,
       session: null,
       status: 'unauthenticated',
     });
@@ -114,6 +144,20 @@ export class AuthenticationService {
   }
 
   private handleError(error: unknown): void {
+    if (error instanceof ApiError && error.status === 403) {
+      this.state.set({
+        errorMessage: getAuthenticationErrorMessage(error),
+        session: null,
+        status: 'forbidden',
+      });
+      return;
+    }
+
+    if (error instanceof ApiError && error.status === 401) {
+      this.setUnauthenticated(getAuthenticationErrorMessage(error));
+      return;
+    }
+
     if (isRecoverableAuthenticationError(error)) {
       this.setError(error);
       return;

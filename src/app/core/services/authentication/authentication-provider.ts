@@ -8,6 +8,7 @@ export interface AuthenticationProvider {
 
   initialize(): Observable<boolean>;
   login(): Observable<boolean>;
+  recover(): Observable<boolean>;
   logout(): Observable<void>;
 }
 

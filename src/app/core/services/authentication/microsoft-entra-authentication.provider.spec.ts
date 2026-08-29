@@ -43,6 +43,25 @@ describe('MicrosoftEntraAuthenticationProvider', () => {
     expect(dependencies.msalService.instance.setActiveAccount).toHaveBeenCalledWith(account);
     expect(dependencies.msalService.acquireTokenSilent).toHaveBeenCalledWith({
       account,
+      forceRefresh: false,
+      scopes: [publicAppConfig.entraScope],
+    });
+  });
+
+  it('Given_RejectedApiToken_When_recoverIsCalled_Then_TokenIsSilentlyRefreshed', async () => {
+    // Given
+    const dependencies = createDependencies();
+    dependencies.msalService.instance.getActiveAccount.and.returnValue(account);
+    const provider = createProvider(dependencies);
+
+    // When
+    const authenticated = await firstValueFrom(provider.recover());
+
+    // Then
+    expect(authenticated).toBeTrue();
+    expect(dependencies.msalService.acquireTokenSilent).toHaveBeenCalledWith({
+      account,
+      forceRefresh: true,
       scopes: [publicAppConfig.entraScope],
     });
   });

@@ -3,6 +3,7 @@ import { Inject, Injectable } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 
 export const APPLICATION_ROUTES = {
+  accessDenied: '/access-denied',
   chat: '/chat',
   login: '/login',
   technicalError: '/technical-error',
@@ -17,6 +18,10 @@ export class ApplicationNavigationService {
 
   createLoginUrlTree(): UrlTree {
     return this.router.createUrlTree([APPLICATION_ROUTES.login]);
+  }
+
+  createAccessDeniedUrlTree(): UrlTree {
+    return this.router.createUrlTree([APPLICATION_ROUTES.accessDenied]);
   }
 
   createTechnicalErrorUrlTree(): UrlTree {

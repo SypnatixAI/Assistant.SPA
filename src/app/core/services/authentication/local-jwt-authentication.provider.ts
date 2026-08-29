@@ -28,6 +28,11 @@ export class LocalJwtAuthenticationProvider implements AuthenticationProvider {
     );
   }
 
+  recover(): Observable<boolean> {
+    this.localAccessTokenService.clear();
+    return this.login();
+  }
+
   logout(): Observable<void> {
     this.localAccessTokenService.clear();
     return of(undefined);

@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
+import { ApiError } from '../../../domain/errors/api-error';
 import { LaunchMode } from '../../config/public-app-config';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
@@ -22,6 +23,7 @@ describe('AuthenticationService', () => {
   let authenticationProvider: {
     initialize: jasmine.Spy;
     login: jasmine.Spy;
+    recover: jasmine.Spy;
     logout: jasmine.Spy;
     launchMode: LaunchMode;
   };
@@ -34,6 +36,7 @@ describe('AuthenticationService', () => {
     authenticationProvider = {
       initialize: jasmine.createSpy('initialize').and.returnValue(of(false)),
       login: jasmine.createSpy('login').and.returnValue(of(true)),
+      recover: jasmine.createSpy('recover').and.returnValue(of(true)),
       logout: jasmine.createSpy('logout').and.returnValue(of(undefined)),
       launchMode: LaunchMode.Local,
     };
@@ -50,6 +53,41 @@ describe('AuthenticationService', () => {
         { provide: TechnicalErrorService, useValue: technicalErrorService },
       ],
     });
+  });
+
+  it('Given_ExpiredApiToken_When_initializeIsCalled_Then_TokenIsRecoveredAndSessionIsRetried', async () => {
+    // Given
+    authenticationProvider.initialize.and.returnValue(of(true));
+    authenticationApiService.authenticateUser.and.returnValues(
+      throwError(() => new ApiError(401, 'http_401', 'Unauthorized', null)),
+      of(session),
+    );
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    await service.initialize();
+
+    // Then
+    expect(authenticationProvider.recover).toHaveBeenCalledTimes(1);
+    expect(authenticationApiService.authenticateUser).toHaveBeenCalledTimes(2);
+    expect(service.status()).toBe('authenticated');
+  });
+
+  it('Given_ForbiddenSession_When_initializeIsCalled_Then_AccessIsMarkedAsForbidden', async () => {
+    // Given
+    authenticationProvider.initialize.and.returnValue(of(true));
+    authenticationApiService.authenticateUser.and.returnValue(
+      throwError(() => new ApiError(403, 'http_403', 'Forbidden', null)),
+    );
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    await service.initialize();
+
+    // Then
+    expect(service.status()).toBe('forbidden');
+    expect(service.session()).toBeNull();
+    expect(technicalErrorService.report).not.toHaveBeenCalled();
   });
 
   it('Given_NoAccessToken_When_initializeIsCalled_Then_UserRemainsUnauthenticated', async () => {
