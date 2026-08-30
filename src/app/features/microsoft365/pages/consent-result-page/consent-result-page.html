@@ -1,0 +1,92 @@
+<main class="consent-result" [class.consent-result--error]="outcome === 'error'">
+  <section class="result-panel" aria-labelledby="consent-result-title">
+    <header class="brand">
+      <span class="brand__mark" aria-hidden="true">O</span>
+      <span class="brand__name">onPremia</span>
+      <span class="brand__context">Configuration Microsoft 365</span>
+    </header>
+
+    <div class="result-content">
+      <div class="status-visual" aria-hidden="true">
+        @if (outcome === 'success') {
+          <svg viewBox="0 0 24 24">
+            <path d="m6.8 12.3 3.2 3.2 7.2-7.2" />
+          </svg>
+        } @else {
+          <svg viewBox="0 0 24 24">
+            <path d="M8 8l8 8M16 8l-8 8" />
+          </svg>
+        }
+      </div>
+
+      @if (outcome === 'success') {
+        <p class="eyebrow">Connexion confirmée</p>
+        <h1 id="consent-result-title">Microsoft 365 est maintenant connecté.</h1>
+        <p class="summary">
+          L’autorisation a été confirmée. Vous pouvez maintenant choisir le site
+          SharePoint que l’assistant pourra consulter.
+        </p>
+
+        <div class="next-step">
+          <span class="next-step__number" aria-hidden="true">02</span>
+          <div>
+            <p class="next-step__label">Prochaine étape</p>
+            <h2>Choisir un site SharePoint</h2>
+            <p>
+              Les contenus compatibles du site choisi seront ajoutés automatiquement.
+              Vous pourrez ensuite retirer ceux que vous ne souhaitez pas utiliser.
+            </p>
+          </div>
+        </div>
+
+        <a class="primary-action" routerLink="/onboarding">
+          Choisir un site
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M5 12h14m-5-5 5 5-5 5" />
+          </svg>
+        </a>
+      } @else {
+        <p class="eyebrow">Connexion non terminée</p>
+        <h1 id="consent-result-title">Microsoft 365 n’a pas pu être connecté.</h1>
+        <p class="summary">
+          L’autorisation a été refusée, a expiré ou n’a pas pu être confirmée. Aucun site
+          SharePoint n’a été ajouté à onPremia.
+        </p>
+
+        <div class="next-step">
+          <span class="next-step__number" aria-hidden="true">!</span>
+          <div>
+            <p class="next-step__label">Que faire maintenant?</p>
+            <h2>Vérifier le compte administrateur</h2>
+            <p>
+              Recommencez avec un compte autorisé à approuver l’accès de votre
+              organisation à Microsoft 365.
+            </p>
+          </div>
+        </div>
+
+        <div class="actions">
+          <a class="primary-action" routerLink="/chat">
+            Retourner à l’espace de travail
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M5 12h14m-5-5 5 5-5 5" />
+            </svg>
+          </a>
+          <a class="secondary-action" href="mailto:support@assistantcore.com">
+            Contacter le soutien
+          </a>
+        </div>
+      }
+    </div>
+
+    <footer>
+      <span class="security-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24">
+          <path d="M12 3 5.5 5.7v5.5c0 4.2 2.6 7.9 6.5 9.8 3.9-1.9 6.5-5.6 6.5-9.8V5.7L12 3Z" />
+          <path d="m9.2 12 1.8 1.8 3.9-4" />
+        </svg>
+      </span>
+      Vous choisissez les sites que l’assistant peut consulter.
+    </footer>
+  </section>
+</main>

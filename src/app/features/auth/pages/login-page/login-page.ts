@@ -34,7 +34,7 @@ export class LoginPage implements OnInit {
     this.status = authenticationService.status;
     effect(() => {
       if (authenticationService.isAuthenticated()) {
-        this.applicationNavigationService.navigateToChat();
+        this.applicationNavigationService.navigateToOnboarding();
       }
     });
   }

@@ -7,9 +7,9 @@
     [attr.aria-expanded]="isOpen()"
     (click)="toggle()"
   >
-    <span class="user-menu__avatar" aria-hidden="true">{{ initials() }}</span>
+    <span class="user-menu__avatar" aria-hidden="true">{{ initial() }}</span>
     <span class="user-menu__identity">
-      <strong>{{ session().user.displayName }}</strong>
+      <strong>{{ firstName() }}</strong>
       <span>{{ session().organization.name }}</span>
     </span>
     <span aria-hidden="true">⌄</span>
@@ -17,9 +17,19 @@
 
   @if (isOpen()) {
     <div class="user-menu__popover" role="menu">
-      <p class="user-menu__name">{{ session().user.displayName }}</p>
+      <p class="user-menu__name">{{ firstName() }}</p>
       <p>{{ session().user.email }}</p>
       <p>{{ session().organization.name }}</p>
+      @if (isAdministrator()) {
+        <a
+          class="user-menu__item"
+          routerLink="/administration/microsoft365"
+          role="menuitem"
+          (click)="closeMenu()"
+        >
+          Microsoft 365
+        </a>
+      }
       <button type="button" role="menuitem" (click)="requestLogout()">Se déconnecter</button>
     </div>
   }

@@ -1,53 +1,25 @@
 .welcome {
-  width: min(100%, 44rem);
+  width: min(100%, 46rem);
   margin: auto;
-  padding: 2rem 1.25rem;
+  padding: 2rem 1.25rem 2.75rem;
   text-align: left;
 }
 
-.welcome__mark {
-  width: 2.75rem;
-  height: 2.75rem;
-  display: grid;
-  margin-bottom: 1.5rem;
-  place-items: center;
-  border-radius: 0.8rem;
-  color: #fff;
-  background: var(--color-primary);
-  font-size: 1.15rem;
-  font-weight: 750;
-  position: relative;
-}
-
-.welcome__mark span {
-  position: absolute;
-  right: 0.42rem;
-  bottom: 0.42rem;
-  width: 0.38rem;
-  height: 0.38rem;
-  border: 2px solid var(--color-primary);
-  border-radius: 50%;
-  background: #82d3c7;
-}
-
-.welcome__eyebrow {
-  margin: 0 0 0.55rem;
-  color: var(--color-primary);
-  font-size: 0.78rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
+.welcome__header {
+  max-width: 40rem;
+  margin-bottom: 1.6rem;
 }
 
 h1 {
   margin: 0;
-  max-width: 38rem;
-  font-size: clamp(1.75rem, 4vw, 2.35rem);
-  letter-spacing: -0.035em;
+  font-size: clamp(1.7rem, 4vw, 2.35rem);
+  letter-spacing: 0;
+  line-height: 1.15;
 }
 
-.welcome__intro {
-  margin: 0.8rem 0 2rem;
+.welcome__header p {
+  max-width: 36rem;
+  margin: 0.85rem 0 0;
   color: var(--color-text-muted);
   line-height: 1.6;
 }
@@ -55,28 +27,33 @@ h1 {
 .suggestions {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.65rem;
+  gap: 0.55rem;
 }
 
 button {
-  min-height: 4.5rem;
+  min-height: 3.75rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 1rem;
-  padding: 0.85rem 1rem;
+  gap: 0.85rem;
+  padding: 0.8rem 0.9rem;
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-medium);
+  border-radius: 0.7rem;
   color: var(--color-text);
   background: var(--color-surface);
   line-height: 1.4;
   text-align: left;
   cursor: pointer;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    box-shadow 140ms ease;
 }
 
 button:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-subtle);
+  box-shadow: 0 8px 22px rgb(16 34 46 / 7%);
 }
 
 button svg {
@@ -94,21 +71,10 @@ button:hover svg {
 }
 
 .welcome__trust {
-  display: flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin: 1.4rem 0 0;
+  margin: 1.1rem 0 0;
   color: var(--color-text-muted);
   font-size: 0.76rem;
-}
-.welcome__trust svg {
-  width: 1rem;
-  height: 1rem;
-  fill: none;
-  stroke: var(--color-primary);
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-width: 1.7;
+  line-height: 1.5;
 }
 
 @media (max-width: 36rem) {
@@ -117,6 +83,6 @@ button:hover svg {
   }
 
   .welcome {
-    padding-top: 2.5rem;
+    padding-top: 2rem;
   }
 }

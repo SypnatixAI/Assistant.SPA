@@ -25,7 +25,7 @@ export function getAuthenticationErrorMessage(error: unknown): string {
   }
 
   if (CONSENT_ERROR_CODES.has(errorCode)) {
-    return "Microsoft n’a pas autorisé l’accès à AssistantCore. Vérifiez le consentement avec votre administrateur.";
+    return "Microsoft n’a pas autorisé l’accès à onPremia. Vérifiez le consentement avec votre administrateur.";
   }
 
   if (CONFIGURATION_ERROR_CODES.has(errorCode)) {
@@ -34,10 +34,10 @@ export function getAuthenticationErrorMessage(error: unknown): string {
 
   if (error instanceof HttpErrorResponse || error instanceof ApiError) {
     if (error.status === 401 || error.status === 403) {
-      return "Votre compte n’est pas autorisé à accéder à AssistantCore.";
+      return "Votre compte n’est pas autorisé à accéder à onPremia.";
     }
 
-    return 'AssistantCore ne peut pas construire votre session pour le moment. Réessayez plus tard.';
+    return 'onPremia ne peut pas construire votre session pour le moment. Réessayez plus tard.';
   }
 
   return 'La connexion a échoué. Réessayez ou contactez votre administrateur.';

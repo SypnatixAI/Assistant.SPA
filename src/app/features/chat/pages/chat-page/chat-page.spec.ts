@@ -315,7 +315,9 @@ describe('ChatPage', () => {
     logoutButton.click();
 
     // Then
-    expect(page.textContent).toContain('Marc Tremblay');
+    expect(page.querySelector('.user-menu__avatar')?.textContent?.trim()).toBe('M');
+    expect(page.querySelector('.user-menu__identity strong')?.textContent?.trim()).toBe('Marc');
+    expect(page.textContent).not.toContain('Marc Tremblay');
     expect(page.textContent).toContain('MetalPro');
     expect(logout).toHaveBeenCalled();
   });

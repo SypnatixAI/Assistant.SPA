@@ -8,11 +8,13 @@ import {
   signal,
   viewChild,
 } from '@angular/core';
+import { RouterLink } from '@angular/router';
 
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [RouterLink],
   selector: 'app-user-menu',
   styleUrl: './user-menu.css',
   templateUrl: './user-menu.html',
@@ -24,13 +26,21 @@ export class UserMenu {
   protected readonly isOpen = signal(false);
   private readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger');
 
-  initials(): string {
-    return this.session()
-      .user.displayName.split(/\s+/)
-      .filter(Boolean)
-      .slice(0, 2)
-      .map((part) => part[0]?.toUpperCase())
-      .join('');
+  firstName(): string {
+    const displayName = this.session().user.displayName.trim();
+    return displayName.split(/\s+/)[0] || displayName;
+  }
+
+  initial(): string {
+    return this.firstName().charAt(0).toUpperCase();
+  }
+
+  isAdministrator(): boolean {
+    return this.session().roles.includes('Admin');
+  }
+
+  closeMenu(): void {
+    this.isOpen.set(false);
   }
 
   toggle(): void {

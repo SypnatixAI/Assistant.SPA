@@ -11,6 +11,6 @@ async function startApplication(): Promise<void> {
 }
 
 void startApplication().catch((error: unknown) => {
-  console.error('Impossible de démarrer AssistantCore.', error);
+  console.error('Impossible de démarrer onPremia.', error);
   renderBootstrapError(document);
 });

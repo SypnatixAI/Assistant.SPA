@@ -52,6 +52,6 @@ function getFallbackCode(status: number): string {
 
 function getFallbackMessage(status: number): string {
   return status === 0
-    ? 'AssistantCore est inaccessible.'
-    : `AssistantCore a retourné une erreur HTTP ${status}.`;
+    ? 'onPremia est inaccessible.'
+    : `onPremia a retourné une erreur HTTP ${status}.`;
 }

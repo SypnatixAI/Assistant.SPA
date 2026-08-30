@@ -2,7 +2,10 @@
 
 ## Règles de modification
 
-- Ne modifie jamais les fichiers directement sans montrer un diff clair.
+- Avant de modifier des fichiers, résume clairement les changements prévus en
+  langage naturel.
+- Ne montre un diff avant modification que si l'utilisateur le demande, si le
+  changement est large, ou si le risque fonctionnel est important.
 - Propose d’abord un plan court.
 - Attends l’approbation avant d’appliquer les changements.
 - Garde les changements petits et ciblés.

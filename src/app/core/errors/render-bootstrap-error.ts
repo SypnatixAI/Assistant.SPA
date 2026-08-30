@@ -8,7 +8,7 @@ export function renderBootstrapError(document: Document): void {
   section.className = 'page-card';
   title.textContent = 'Une erreur technique est survenue';
   message.textContent =
-    'AssistantCore ne peut pas démarrer pour le moment. Rechargez la page ou réessayez plus tard.';
+    'onPremia ne peut pas démarrer pour le moment. Rechargez la page ou réessayez plus tard.';
   section.append(title, message);
   main.append(section);
   document.body.replaceChildren(main);
