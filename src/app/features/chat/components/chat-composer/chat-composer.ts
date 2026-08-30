@@ -10,28 +10,20 @@ import {
 import { DecimalPipe } from '@angular/common';
 import { FormControl, ReactiveFormsModule, Validators } from '@angular/forms';
 
-import { AvailableModel } from '../../../../domain/models/model-catalog';
-import { ModelSelector } from '../../../models/components/model-selector/model-selector';
 
 const MAXIMUM_MESSAGE_LENGTH = 4_000;
 const MAXIMUM_MESSAGE_INPUT_HEIGHT = 224;
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [DecimalPipe, ModelSelector, ReactiveFormsModule],
+  imports: [DecimalPipe, ReactiveFormsModule],
   selector: 'app-chat-composer',
   styleUrl: './chat-composer.css',
   templateUrl: './chat-composer.html',
 })
 export class ChatComposer {
   readonly disabled = input(false);
-  readonly models = input<readonly AvailableModel[]>([]);
-  readonly selectedModelId = input<string | null>(null);
-  readonly isModelLoading = input(false);
-  readonly modelError = input<string | null>(null);
   readonly messageSubmitted = output<string>();
-  readonly modelSelected = output<string>();
-  readonly modelRefreshRequested = output<void>();
   readonly maximumLength = MAXIMUM_MESSAGE_LENGTH;
   readonly messageControl = new FormControl('', {
     nonNullable: true,

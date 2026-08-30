@@ -1,0 +1,8 @@
+{
+  "apiBaseUrl": "/",
+  "launchMode": "Certification",
+  "authenticationUrl": "/local-auth/token",
+  "entraClientId": "97fda345-b54e-4243-b05a-31623871df18",
+  "entraAuthority": "https://login.microsoftonline.com/organizations",
+  "entraScope": "api://f70fb50b-52d5-4346-b769-1121cb3ab3e2/access_as_user"
+}

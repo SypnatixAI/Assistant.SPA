@@ -4,7 +4,7 @@
 
 .consent-result {
   --accent: #08745f;
-  --accent-dark: #115f73;
+  --accent-dark: #0d5a67;
   --accent-soft: #e2f4ef;
   --accent-surface: #f7fbfa;
   --accent-border: #cce5df;
@@ -67,7 +67,7 @@ footer,
   height: 2.4rem;
   border-radius: 0.75rem;
   color: #fff;
-  background: linear-gradient(145deg, #16778b, #115f73);
+  background: linear-gradient(145deg, #087d75, #0d5261);
   font-weight: 800;
 }
 
@@ -207,8 +207,8 @@ h2 {
   gap: 0.65rem;
   padding: 0.85rem 1.25rem;
   color: #fff;
-  background: linear-gradient(135deg, #16778b, var(--accent-dark));
-  box-shadow: 0 0.8rem 2rem rgb(17 95 115 / 24%);
+  background: linear-gradient(135deg, #087d75, var(--accent-dark));
+  box-shadow: 0 0.8rem 2rem rgb(8 103 95 / 24%);
   text-decoration: none;
   transition: transform 160ms ease;
 }

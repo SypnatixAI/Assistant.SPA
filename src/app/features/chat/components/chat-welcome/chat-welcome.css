@@ -53,7 +53,7 @@ button {
 button:hover {
   border-color: var(--color-border-strong);
   background: var(--color-surface-subtle);
-  box-shadow: 0 8px 22px rgb(16 34 46 / 7%);
+  box-shadow: 0 8px 22px rgb(18 105 94 / 7%);
 }
 
 button svg {

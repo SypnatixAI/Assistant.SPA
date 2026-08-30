@@ -26,6 +26,7 @@ avec le gestionnaire Node.js de votre choix.
 
 ```bash
 npm start          # serveur local avec authentification simulée
+npm run start:certification # serveur local avec Microsoft Entra
 npm run build      # build de production
 npm run test:ci    # tests Vitest en exécution unique
 npm run lint       # ESLint pour TypeScript et les templates Angular
@@ -71,18 +72,19 @@ AssistantCore.
 
 ### Authentification Microsoft réelle en local
 
-Pour vérifier le vrai parcours MSAL, mettre le `launchMode` à `Certification`
-et renseigner les identifiants publics dans
-`public/assets/config/config.json`. Démarrer ensuite les services connectés et
-la SPA avec :
+Pour vérifier le vrai parcours MSAL, utiliser la configuration publique dédiée
+`public/assets/config/config.certification.json`. Démarrer ensuite les services
+connectés et la SPA avec :
 
 ```bash
 # Dans le dépôt backend
 bash scripts/start-local-live.sh
 
 # Dans ce dépôt
-npm start
+npm run start:certification
 ```
+
+`npm run start:entra` est un alias de cette commande.
 
 Le fichier contient uniquement le client ID public de la SPA, l’autorité et le
 scope de l’API. Aucun client secret ne doit y être ajouté. L’URI de retour SPA
@@ -111,19 +113,20 @@ ne lit ni ne persiste le token.
 
 ## Configuration publique
 
-Avant de démarrer Angular, la SPA charge toujours le fichier statique
-`/assets/config/config.json`. Sa propriété `launchMode` sélectionne
-l’authentification simulée (`Local`) ou Microsoft Entra (`Certification`).
+Avant de démarrer Angular, la SPA charge une configuration publique statique.
+`npm start` utilise `/assets/config/config.json` pour l’authentification simulée
+et `npm run start:certification` utilise
+`/assets/config/config.certification.json` pour Microsoft Entra.
 
 En local, `public/assets/config/config.json` utilise la racine `/`. Le serveur de
 développement transmet les appels `/api` à AssistantCore sur
 `http://localhost:5043` grâce à `proxy.conf.json`. Ce fichier de configuration
 publique local est exclu du build de production.
 
-En DEV, CERT et PROD, le déploiement ou le BFF doit placer un fichier portant le
-même nom dans `assets/config/config.json`. La SPA utilise ainsi le même chemin et
-le même build dans tous les environnements. Le BFF est responsable de remplacer
-le contenu avec les valeurs publiques de l’environnement courant.
+En DEV, CERT et PROD, le déploiement ou le BFF doit placer la configuration de
+l’environnement dans `assets/config/config.json`. Le build de production reste
+ainsi indépendant de l’environnement. Le fichier `config.certification.json`
+sert uniquement au démarrage connecté local et est exclu du build de production.
 
 Le serveur doit retourner ce fichier sans cache persistant. La SPA demande aussi
 la ressource avec `cache: no-store` afin de ne pas conserver une ancienne
@@ -134,7 +137,8 @@ secret, de client secret, de clé API ou d’adresse privée de production.
 
 ## Vérification manuelle de la connexion
 
-1. Remplacer les valeurs d’exemple dans `public/assets/config/config.json`.
+1. Vérifier les valeurs publiques dans
+   `public/assets/config/config.certification.json`.
 2. Démarrer AssistantCore et la SPA, puis ouvrir `/chat` sans session pour
    vérifier la redirection automatique vers Microsoft.
 3. Terminer la connexion, la MFA ou le consentement demandé.

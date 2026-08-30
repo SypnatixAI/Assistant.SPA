@@ -1,9 +1,7 @@
-import { MessageUsageResponse } from '../usage/token-usage';
-
 export interface SendMessageRequest {
   readonly conversationId: string | null;
   readonly message: string;
-  readonly model: string;
+  readonly model?: string;
 }
 
 export interface SendMessageSourceResponse {
@@ -20,6 +18,5 @@ export interface SendMessageResponse {
   readonly model: string;
   readonly sources: readonly SendMessageSourceResponse[];
   readonly warnings: readonly string[];
-  readonly usage?: MessageUsageResponse;
   readonly createdAt: string;
 }
