@@ -5,7 +5,10 @@ import { LocalAccessTokenService } from './local-access-token.service';
 import { LocalJwtAuthenticationProvider } from './local-jwt-authentication.provider';
 
 describe('LocalJwtAuthenticationProvider', () => {
-  it('Given_LocalIdentity_When_loginIsCalled_Then_AccessTokenIsKeptInMemory', async () => {
+  beforeEach(() => new LocalAccessTokenService().clear());
+  afterEach(() => new LocalAccessTokenService().clear());
+
+  it('Given_LocalIdentity_When_loginIsCalled_Then_AccessTokenIsKeptInSession', async () => {
     // Given
     const mockAuthenticationApiService = {
       getAccessToken: jasmine.createSpy('getAccessToken').and.returnValue(

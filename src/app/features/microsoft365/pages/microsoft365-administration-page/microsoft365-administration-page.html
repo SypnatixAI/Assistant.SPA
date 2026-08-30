@@ -1,0 +1,170 @@
+<main class="onboarding-shell">
+  <header class="topbar">
+    <a class="brand" [routerLink]="isOnboardingMode ? '/onboarding' : '/chat'" aria-label="onPremia">
+      <span class="brand-mark" aria-hidden="true">O</span>
+      <span>onPremia</span>
+    </a>
+    @if (!isOnboardingMode) {
+      <a class="back-link" routerLink="/chat">Retour à l’espace de travail</a>
+    } @else {
+      <span class="secure-label">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5.5 5.7v5.5c0 4.2 2.6 7.9 6.5 9.8 3.9-1.9 6.5-5.6 6.5-9.8V5.7L12 3Z" /></svg>
+        Configuration sécurisée
+      </span>
+    }
+  </header>
+
+  <section class="onboarding-layout">
+    <aside class="intro-panel">
+      <p class="eyebrow">Configuration de l’espace</p>
+      <h1>Préparez votre organisation pour le chat.</h1>
+      <p class="intro-copy">
+        Deux étapes suffisent pour relier Microsoft 365 et choisir les contenus que l’assistant pourra consulter.
+      </p>
+
+      <nav aria-label="Progression de la configuration">
+        <ol class="stepper">
+          <li [class.step--complete]="isStepComplete(1)" [class.step--current]="currentStep() === 1">
+            <span class="step-marker" aria-hidden="true">{{ isStepComplete(1) ? '✓' : '1' }}</span>
+            <span><strong>Autoriser l’organisation</strong><small>{{ isStepComplete(1) ? 'Consentement validé' : 'Connexion Microsoft 365' }}</small></span>
+          </li>
+          <li [class.step--complete]="isStepComplete(2)" [class.step--current]="currentStep() === 2" [class.step--locked]="isStepLocked(2)">
+            <span class="step-marker" aria-hidden="true">{{ isStepComplete(2) ? '✓' : '2' }}</span>
+            <span><strong>Choisir un site</strong><small>{{ isStepLocked(2) ? 'Disponible après l’étape 1' : isStepComplete(2) ? 'Site SharePoint choisi' : 'Sélection SharePoint' }}</small></span>
+          </li>
+        </ol>
+      </nav>
+
+      <div class="privacy-note">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 5.5 5.7v5.5c0 4.2 2.6 7.9 6.5 9.8 3.9-1.9 6.5-5.6 6.5-9.8V5.7L12 3Z" /><path d="m9.2 12 1.8 1.8 3.9-4" /></svg>
+        <p><strong>Vous gardez le contrôle.</strong> Vous choisissez les sites que l’assistant peut consulter et pouvez retirer un contenu à tout moment.</p>
+      </div>
+    </aside>
+
+    <section class="workspace" aria-live="polite">
+      @if (isLoadingStatus()) {
+        <div class="loading-state" role="status">
+          <span class="spinner" aria-hidden="true"></span>
+          <p>Vérification de votre espace…</p>
+        </div>
+      } @else {
+        @if (consentOutcome === 'success') {
+          <div class="notice notice--success notice--arrival" role="status">
+            <span aria-hidden="true">✓</span>
+            <div><strong>Autorisation confirmée</strong><p>Microsoft 365 est connecté. Vous pouvez maintenant choisir le site à utiliser.</p></div>
+          </div>
+        } @else if (consentOutcome === 'error') {
+          <div class="notice notice--error" role="alert">
+            <span aria-hidden="true">!</span>
+            <div><strong>Autorisation non terminée</strong><p>Le consentement a été refusé ou n’a pas pu être validé. Vous pouvez recommencer.</p></div>
+          </div>
+        }
+
+        @if (errorMessage(); as error) {
+          <div class="notice notice--error" role="alert">
+            <span aria-hidden="true">!</span><div><strong>Une action est requise</strong><p>{{ error }}</p></div>
+            <button type="button" class="text-button" (click)="refresh()">Réessayer</button>
+          </div>
+        }
+
+        @if (!onboardingStatus()?.isAdministrator && !onboardingStatus()?.isComplete) {
+          <div class="waiting-panel">
+            <span class="waiting-icon" aria-hidden="true">⌛</span>
+            <p class="eyebrow">Configuration en attente</p>
+            <h2>Un administrateur doit préparer votre espace.</h2>
+            <p>Un administrateur doit autoriser Microsoft 365 et choisir un site SharePoint. Revenez ici une fois ces deux étapes terminées.</p>
+            <button type="button" class="secondary-button" (click)="refresh()">Vérifier à nouveau</button>
+          </div>
+        } @else {
+          <article class="step-card" [class.step-card--active]="currentStep() === 1" [class.step-card--complete]="isStepComplete(1)">
+            <header class="step-card__header">
+              <span class="card-number">{{ isStepComplete(1) ? '✓' : '01' }}</span>
+              <div><p class="eyebrow">Étape 1</p><h2>Autoriser l’accès de votre organisation</h2></div>
+              <span class="state-badge">{{ isStepComplete(1) ? 'Terminée' : 'À faire' }}</span>
+            </header>
+            @if (currentStep() === 1) {
+              <div class="step-card__body">
+                <p>Vous êtes déjà connecté à votre compte. Cette autorisation permet à onPremia d’accéder aux sites que vous choisirez à l’étape suivante.</p>
+                <button type="button" class="primary-button" (click)="startConsent()" [disabled]="isStartingConsent()">
+                  {{ isStartingConsent() ? 'Ouverture de Microsoft…' : onboardingStatus()?.connectionStatus === 'Error' ? 'Recommencer l’autorisation' : 'Autoriser avec Microsoft 365' }}
+                  <span aria-hidden="true">→</span>
+                </button>
+              </div>
+            } @else {
+              <p class="completed-summary">L’autorisation administrateur a été validée pour votre organisation.</p>
+            }
+          </article>
+
+          <article class="step-card" [class.step-card--active]="currentStep() === 2" [class.step-card--arrival]="consentOutcome === 'success' && currentStep() === 2" [class.step-card--complete]="isStepComplete(2)" [class.step-card--locked]="isStepLocked(2)" [attr.aria-disabled]="isStepLocked(2)">
+            <header class="step-card__header">
+              <span class="card-number">{{ isStepComplete(2) ? '✓' : '02' }}</span>
+              <div><p class="eyebrow">Étape 2</p><h2>Choisir un site SharePoint</h2></div>
+              <span class="state-badge">{{ isStepLocked(2) ? 'Verrouillée' : isStepComplete(2) ? 'Terminée' : 'À faire' }}</span>
+            </header>
+            @if (isStepLocked(2)) {
+              <p class="locked-summary">Terminez l’autorisation Microsoft 365 pour accéder à cette étape.</p>
+            } @else if (currentStep() === 2 || !isOnboardingMode) {
+              <div class="step-card__body">
+                <p>Choisissez le premier site que l’assistant pourra consulter. Ses documents et ses listes seront ajoutés automatiquement. Vous pourrez en retirer plus tard.</p>
+                @if (isLoadingSites()) {
+                  <p class="inline-status" role="status">Chargement des sites…</p>
+                } @else {
+                  <div class="site-list">
+                    @for (site of sites(); track site.siteId) {
+                      <button type="button" class="site-option" [class.site-option--selected]="site.isSelected" [disabled]="isSelectingSite()" (click)="chooseSite(site)">
+                        <span class="site-icon" aria-hidden="true">S</span>
+                        <span><strong>{{ site.displayName }}</strong><small>{{ site.webUrl }}</small></span>
+                        <span class="selection-label">{{ isSelectingSite() ? 'Préparation…' : site.isSelected ? 'Choisi' : 'Choisir' }}</span>
+                      </button>
+                    } @empty {
+                      <p class="inline-status">Aucun site SharePoint n’est disponible.</p>
+                    }
+                  </div>
+                }
+              </div>
+            } @else {
+              <p class="completed-summary">Le site {{ selectedSite()?.displayName || 'SharePoint' }} est prêt.</p>
+            }
+          </article>
+
+          @if (!isOnboardingMode && onboardingStatus()?.hasSelectedSite) {
+          <article class="step-card content-settings">
+            <header class="step-card__header">
+              <span class="card-number" aria-hidden="true">☰</span>
+              <div><p class="eyebrow">Réglage facultatif</p><h2>Gérer les contenus utilisés</h2></div>
+              <span class="state-badge">Facultatif</span>
+            </header>
+              <div class="step-card__body">
+                <p>Tous les contenus compatibles du site ont été ajoutés. Vous pouvez retirer ceux que l’assistant ne doit pas consulter.</p>
+                @if (isLoadingSources()) {
+                  <p class="inline-status" role="status">Chargement des contenus…</p>
+                } @else {
+                  <div class="source-grid">
+                    <section class="source-group"><h3>Documents</h3>
+                      @for (drive of drives(); track drive.driveId) {
+                        <div class="source-row"><span><strong>{{ drive.displayName }}</strong><small>Documents partagés</small></span><button type="button" class="toggle-button" [class.toggle-button--active]="drive.isIndexed" [disabled]="updatingSourceIds().has('drive:' + drive.driveId)" (click)="toggleDrive(drive)">{{ drive.isIndexed ? 'Retirer' : 'Ajouter' }}</button></div>
+                      } @empty { <p class="inline-status">Aucun document partagé disponible.</p> }
+                    </section>
+                    <section class="source-group"><h3>Listes</h3>
+                      @for (list of lists(); track list.listId) {
+                        <div class="source-row"><span><strong>{{ list.displayName }}</strong><small>Informations partagées</small></span><button type="button" class="toggle-button" [class.toggle-button--active]="list.isIndexed" [disabled]="updatingSourceIds().has('list:' + list.listId)" (click)="toggleList(list)">{{ list.isIndexed ? 'Retirer' : 'Ajouter' }}</button></div>
+                      } @empty { <p class="inline-status">Aucune liste disponible.</p> }
+                    </section>
+                  </div>
+                }
+              </div>
+          </article>
+          }
+
+          @if (onboardingStatus()?.isComplete && isOnboardingMode) {
+            <section class="completion-panel">
+              <span class="completion-icon" aria-hidden="true">✓</span>
+              <div><p class="eyebrow">Configuration terminée</p><h2>Votre espace est prêt.</h2><p>Vous pouvez maintenant accéder au chat et poser vos questions à l’assistant.</p></div>
+              <button type="button" class="primary-button" (click)="finishOnboarding()">Accéder au chat <span aria-hidden="true">→</span></button>
+            </section>
+          }
+        }
+      }
+    </section>
+  </section>
+</main>

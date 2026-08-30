@@ -12,7 +12,7 @@ describe('LoginPage', () => {
   const status = signal<AuthenticationStatus>(
     AuthenticationStatus.Unauthenticated,
   );
-  let applicationNavigationService: { navigateToChat: jasmine.Spy };
+  let applicationNavigationService: { navigateToOnboarding: jasmine.Spy };
   let authenticationService: {
     errorMessage: typeof errorMessage;
     isAuthenticated: typeof isAuthenticated;
@@ -28,7 +28,7 @@ describe('LoginPage', () => {
     status.set(AuthenticationStatus.Unauthenticated);
     login = jasmine.createSpy('login');
     applicationNavigationService = {
-      navigateToChat: jasmine.createSpy('navigateToChat'),
+      navigateToOnboarding: jasmine.createSpy('navigateToOnboarding'),
     };
     authenticationService = {
       errorMessage,
@@ -108,7 +108,7 @@ describe('LoginPage', () => {
     expect(login).not.toHaveBeenCalled();
   });
 
-  it('Given_AuthenticatedSession_When_ngOnInitIsCalled_Then_ChatNavigationStarts', () => {
+  it('Given_AuthenticatedSession_When_ngOnInitIsCalled_Then_OnboardingNavigationStarts', () => {
     // Given
     isAuthenticated.set(true);
 
@@ -117,7 +117,7 @@ describe('LoginPage', () => {
 
     // Then
     expect(
-      applicationNavigationService.navigateToChat,
+      applicationNavigationService.navigateToOnboarding,
     ).toHaveBeenCalled();
     expect(login).not.toHaveBeenCalled();
   });

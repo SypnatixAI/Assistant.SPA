@@ -1,15 +1,15 @@
 import { Injectable } from '@angular/core';
 
+const LOCAL_ACCESS_TOKEN_KEY = 'assistantCore.localAccessToken';
+
 @Injectable({ providedIn: 'root' })
 export class LocalAccessTokenService {
-  private accessToken: string | null = null;
-
   clear(): void {
-    this.accessToken = null;
+    sessionStorage.removeItem(LOCAL_ACCESS_TOKEN_KEY);
   }
 
   get(): string | null {
-    return this.accessToken;
+    return sessionStorage.getItem(LOCAL_ACCESS_TOKEN_KEY);
   }
 
   set(accessToken: string): void {
@@ -17,6 +17,6 @@ export class LocalAccessTokenService {
       throw new Error('The local access token cannot be empty.');
     }
 
-    this.accessToken = accessToken;
+    sessionStorage.setItem(LOCAL_ACCESS_TOKEN_KEY, accessToken);
   }
 }

@@ -23,7 +23,7 @@ describe('AuthenticationNavigationService', () => {
     msalService.loginRedirect.and.returnValue(of(undefined));
     const applicationNavigationService = jasmine.createSpyObj<ApplicationNavigationService>(
       'ApplicationNavigationService',
-      { getChatAbsoluteUrl: 'http://localhost:4200/chat' },
+      { getOnboardingAbsoluteUrl: 'http://localhost:4200/onboarding' },
     );
     const service = new AuthenticationNavigationService(
       msalService,
@@ -36,7 +36,7 @@ describe('AuthenticationNavigationService', () => {
 
     // Then
     expect(msalService.loginRedirect).toHaveBeenCalledWith({
-      redirectStartPage: 'http://localhost:4200/chat',
+      redirectStartPage: 'http://localhost:4200/onboarding',
       scopes: [publicAppConfig.entraScope],
     });
   });

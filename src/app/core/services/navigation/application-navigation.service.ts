@@ -6,6 +6,8 @@ export const APPLICATION_ROUTES = {
   accessDenied: '/access-denied',
   chat: '/chat',
   login: '/login',
+  microsoft365Administration: '/administration/microsoft365',
+  onboarding: '/onboarding',
   technicalError: '/technical-error',
 } as const;
 
@@ -28,8 +30,16 @@ export class ApplicationNavigationService {
     return this.router.createUrlTree([APPLICATION_ROUTES.technicalError]);
   }
 
+  createOnboardingUrlTree(): UrlTree {
+    return this.router.createUrlTree([APPLICATION_ROUTES.onboarding]);
+  }
+
   getChatAbsoluteUrl(): string {
     return this.getAbsoluteUrl(APPLICATION_ROUTES.chat);
+  }
+
+  getOnboardingAbsoluteUrl(): string {
+    return this.getAbsoluteUrl(APPLICATION_ROUTES.onboarding);
   }
 
   getLoginAbsoluteUrl(): string {
@@ -50,6 +60,19 @@ export class ApplicationNavigationService {
 
   navigateToChat(): void {
     void this.router.navigateByUrl(APPLICATION_ROUTES.chat);
+  }
+
+  navigateToOnboarding(): void {
+    void this.router.navigateByUrl(APPLICATION_ROUTES.onboarding);
+  }
+
+  navigateToExternalHttpsUrl(absoluteUrl: string): void {
+    const url = new URL(absoluteUrl);
+    if (url.protocol !== 'https:') {
+      throw new Error('External navigation requires an HTTPS URL.');
+    }
+
+    this.document.location.assign(url.href);
   }
 
   reloadApplication(): void {
