@@ -134,7 +134,7 @@ export class ChatPage {
       .pipe(finalize(() => this.isProcessing.set(false)))
       .subscribe({
         next: (response) => this.applyMessageResponse(response),
-        error: (error: unknown) => {
+        error: () => {
           this.sendError.set(
             'La réponse n’a pas pu être chargée. Réessayez dans quelques instants.',
           );
