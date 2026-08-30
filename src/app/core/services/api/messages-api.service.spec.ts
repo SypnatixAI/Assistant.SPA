@@ -8,7 +8,7 @@ import { SendMessageRequest, SendMessageResponse } from '../../../domain/message
 import { MessagesApiService } from './messages-api.service';
 
 describe('MessagesApiService', () => {
-  it('Given_AMultilineQuestion_When_sendMessageIsCalled_Then_ContentAndModelRemainUnchanged', async () => {
+  it('Given_AMultilineQuestion_When_sendMessageIsCalled_Then_ContentIsSentWithoutModelSelection', async () => {
     // Given
     TestBed.configureTestingModule({
       providers: [
@@ -33,7 +33,6 @@ describe('MessagesApiService', () => {
     const requestBody: SendMessageRequest = {
       conversationId: null,
       message: `Première ligne\nDeuxième ligne ${'a'.repeat(250)}`,
-      model: 'gpt-5.6-luna',
     };
     const response: SendMessageResponse = {
       conversationId: 'conversation-id',

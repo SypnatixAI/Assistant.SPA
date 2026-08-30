@@ -13,9 +13,9 @@
   padding: clamp(1rem, 3vw, 2.5rem);
   color: #172033;
   background:
-    radial-gradient(circle at 50% 0%, #e5edff 0%, transparent 32rem),
-    radial-gradient(circle at 90% 90%, #e9f7f5 0%, transparent 28rem),
-    #f5f7fb;
+    radial-gradient(circle at 50% 0%, #d3efec 0%, transparent 32rem),
+    radial-gradient(circle at 90% 90%, #edf7f4 0%, transparent 28rem),
+    #f4f6f8;
 }
 
 .error-panel {
@@ -24,11 +24,11 @@
   display: grid;
   grid-template-rows: auto 1fr auto;
   padding: clamp(1.25rem, 3.5vw, 2.75rem);
-  border: 1px solid #dce3ef;
+  border: 1px solid #d7e6e3;
   border-radius: clamp(1.25rem, 3vw, 2rem);
   background: rgb(255 255 255 / 94%);
   box-shadow:
-    0 2rem 6rem rgb(31 48 84 / 12%),
+    0 2rem 6rem rgb(18 105 94 / 12%),
     inset 0 1px 0 #fff;
   backdrop-filter: blur(1.25rem);
 }
@@ -50,8 +50,8 @@
   place-items: center;
   border: 1px solid rgb(255 255 255 / 65%);
   border-radius: 0.7rem;
-  background: linear-gradient(145deg, #4c75e1, #3157d5);
-  box-shadow: 0 0.6rem 1.5rem rgb(49 87 213 / 32%);
+  background: linear-gradient(145deg, #087d75, #0d5261);
+  box-shadow: 0 0.6rem 1.5rem rgb(8 103 95 / 28%);
   font-size: 1rem;
 }
 
@@ -68,12 +68,12 @@
   display: grid;
   place-items: center;
   margin: 0 auto 2rem;
-  border: 1px solid #d8e3ff;
+  border: 1px solid #b9e0da;
   border-radius: 1.6rem;
-  color: #3157d5;
-  background: linear-gradient(145deg, #f5f8ff, #eaf0ff);
+  color: #08766c;
+  background: linear-gradient(145deg, #f7fcfb, #eaf7f4);
   box-shadow:
-    0 1rem 3rem rgb(49 87 213 / 12%),
+    0 1rem 3rem rgb(18 105 94 / 12%),
     inset 0 1px 0 #fff;
 }
 
@@ -89,7 +89,7 @@
 
 .eyebrow {
   margin: 0 0 1rem;
-  color: #3157d5;
+  color: #08766c;
   font-size: clamp(0.72rem, 1.2vw, 0.8rem);
   font-weight: 750;
   letter-spacing: 0.13em;
@@ -98,7 +98,7 @@
 
 h1 {
   margin: 0;
-  color: #14213d;
+  color: #132033;
   font-size: clamp(2.25rem, 5.5vw, 4.5rem);
   font-weight: 720;
   letter-spacing: -0.045em;
@@ -139,8 +139,8 @@ button {
   padding: 0.85rem 1.35rem;
   border: 1px solid rgb(255 255 255 / 10%);
   color: #fff;
-  background: linear-gradient(135deg, #4b70dc, #3157d5);
-  box-shadow: 0 0.8rem 2rem rgb(28 59 156 / 32%);
+  background: linear-gradient(135deg, #087d75, #0d5a67);
+  box-shadow: 0 0.8rem 2rem rgb(8 103 95 / 24%);
   cursor: pointer;
   transition:
     transform 160ms ease,
@@ -159,15 +159,15 @@ button svg {
 }
 
 button:hover {
-  background: linear-gradient(135deg, #587de8, #3a61dc);
-  box-shadow: 0 1rem 2.5rem rgb(28 59 156 / 42%);
+  background: linear-gradient(135deg, #109186, #116878);
+  box-shadow: 0 1rem 2.5rem rgb(8 103 95 / 32%);
   transform: translateY(-2px);
 }
 
 a {
   padding: 0.75rem 0;
-  color: #405b86;
-  text-decoration-color: rgb(64 91 134 / 40%);
+  color: #24524d;
+  text-decoration-color: rgb(36 82 77 / 40%);
   text-underline-offset: 0.3rem;
   transition: color 160ms ease;
 }
@@ -182,7 +182,7 @@ footer {
   justify-content: center;
   gap: 0.65rem;
   padding-top: 1.25rem;
-  border-top: 1px solid #e4e9f1;
+  border-top: 1px solid #dfe8e6;
   color: #6e7c91;
   font-size: 0.82rem;
   line-height: 1.5;
@@ -194,8 +194,8 @@ footer {
   height: 0.45rem;
   flex: 0 0 auto;
   border-radius: 50%;
-  background: #6f8de5;
-  box-shadow: 0 0 0.75rem rgb(111 141 229 / 75%);
+  background: #16907f;
+  box-shadow: 0 0 0.75rem rgb(22 144 127 / 65%);
 }
 
 @media (max-width: 40rem) {

@@ -30,7 +30,7 @@
           </li>
           <li [class.step--complete]="isStepComplete(2)" [class.step--current]="currentStep() === 2" [class.step--locked]="isStepLocked(2)">
             <span class="step-marker" aria-hidden="true">{{ isStepComplete(2) ? '✓' : '2' }}</span>
-            <span><strong>Choisir un site</strong><small>{{ isStepLocked(2) ? 'Disponible après l’étape 1' : isStepComplete(2) ? 'Site SharePoint choisi' : 'Sélection SharePoint' }}</small></span>
+            <span><strong>Choisir les sites</strong><small>{{ isStepLocked(2) ? 'Disponible après l’étape 1' : isStepComplete(2) ? 'Sites SharePoint choisis' : 'Sélection SharePoint' }}</small></span>
           </li>
         </ol>
       </nav>
@@ -72,7 +72,7 @@
             <span class="waiting-icon" aria-hidden="true">⌛</span>
             <p class="eyebrow">Configuration en attente</p>
             <h2>Un administrateur doit préparer votre espace.</h2>
-            <p>Un administrateur doit autoriser Microsoft 365 et choisir un site SharePoint. Revenez ici une fois ces deux étapes terminées.</p>
+            <p>Un administrateur doit autoriser Microsoft 365 et choisir les sites SharePoint. Revenez ici une fois ces deux étapes terminées.</p>
             <button type="button" class="secondary-button" (click)="refresh()">Vérifier à nouveau</button>
           </div>
         } @else {
@@ -98,32 +98,50 @@
           <article class="step-card" [class.step-card--active]="currentStep() === 2" [class.step-card--arrival]="consentOutcome === 'success' && currentStep() === 2" [class.step-card--complete]="isStepComplete(2)" [class.step-card--locked]="isStepLocked(2)" [attr.aria-disabled]="isStepLocked(2)">
             <header class="step-card__header">
               <span class="card-number">{{ isStepComplete(2) ? '✓' : '02' }}</span>
-              <div><p class="eyebrow">Étape 2</p><h2>Choisir un site SharePoint</h2></div>
+              <div><p class="eyebrow">Étape 2</p><h2>Choisir les sites SharePoint</h2></div>
               <span class="state-badge">{{ isStepLocked(2) ? 'Verrouillée' : isStepComplete(2) ? 'Terminée' : 'À faire' }}</span>
             </header>
             @if (isStepLocked(2)) {
               <p class="locked-summary">Terminez l’autorisation Microsoft 365 pour accéder à cette étape.</p>
             } @else if (currentStep() === 2 || !isOnboardingMode) {
               <div class="step-card__body">
-                <p>Choisissez le premier site que l’assistant pourra consulter. Ses documents et ses listes seront ajoutés automatiquement. Vous pourrez en retirer plus tard.</p>
+                <p>Sélectionnez un ou plusieurs sites, puis terminez la sélection. Vous pouvez cocher et décocher chaque site avant de confirmer.</p>
                 @if (isLoadingSites()) {
                   <p class="inline-status" role="status">Chargement des sites…</p>
+                } @else if (hasSitesLoadError()) {
+                  <p class="inline-status">Les sites SharePoint n’ont pas pu être chargés.</p>
                 } @else {
                   <div class="site-list">
                     @for (site of sites(); track site.siteId) {
-                      <button type="button" class="site-option" [class.site-option--selected]="site.isSelected" [disabled]="isSelectingSite()" (click)="chooseSite(site)">
-                        <span class="site-icon" aria-hidden="true">S</span>
-                        <span><strong>{{ site.displayName }}</strong><small>{{ site.webUrl }}</small></span>
-                        <span class="selection-label">{{ isSelectingSite() ? 'Préparation…' : site.isSelected ? 'Choisi' : 'Choisir' }}</span>
-                      </button>
+                      @if (isOnboardingMode) {
+                        <label class="site-option" [class.site-option--selected]="site.isSelected || isSitePending(site.siteId)">
+                          <input class="site-checkbox" type="checkbox" [checked]="site.isSelected || isSitePending(site.siteId)" [disabled]="site.isSelected || isSelectingSite()" (change)="togglePendingSite(site)" />
+                          <span><strong>{{ site.displayName }}</strong><small>{{ site.webUrl }}</small></span>
+                          <span class="selection-label">{{ site.isSelected ? 'Déjà ajouté' : isSitePending(site.siteId) ? 'Sélectionné' : 'Sélectionner' }}</span>
+                        </label>
+                      } @else {
+                        <button type="button" class="site-option" [class.site-option--selected]="site.isSelected" [disabled]="isSelectingSite()" (click)="chooseSite(site)">
+                          <span class="site-icon" aria-hidden="true">S</span>
+                          <span><strong>{{ site.displayName }}</strong><small>{{ site.webUrl }}</small></span>
+                          <span class="selection-label">{{ isSelectingSite() ? 'Préparation…' : site.isSelected ? 'Choisi' : 'Choisir' }}</span>
+                        </button>
+                      }
                     } @empty {
                       <p class="inline-status">Aucun site SharePoint n’est disponible.</p>
                     }
                   </div>
+                  @if (isOnboardingMode && sites().length > 0) {
+                    <div class="site-selection-actions">
+                      <span>{{ pendingSiteCount() }} site{{ pendingSiteCount() > 1 ? 's' : '' }} sélectionné{{ pendingSiteCount() > 1 ? 's' : '' }}</span>
+                      <button type="button" class="primary-button confirm-sites-button" [disabled]="pendingSiteCount() === 0 || isSelectingSite()" (click)="confirmSiteSelection()">
+                        {{ isSelectingSite() ? 'Préparation des sites…' : 'Terminer la sélection' }}
+                      </button>
+                    </div>
+                  }
                 }
               </div>
             } @else {
-              <p class="completed-summary">Le site {{ selectedSite()?.displayName || 'SharePoint' }} est prêt.</p>
+              <p class="completed-summary">Les sites SharePoint sélectionnés sont prêts.</p>
             }
           </article>
 
@@ -159,8 +177,7 @@
           @if (onboardingStatus()?.isComplete && isOnboardingMode) {
             <section class="completion-panel">
               <span class="completion-icon" aria-hidden="true">✓</span>
-              <div><p class="eyebrow">Configuration terminée</p><h2>Votre espace est prêt.</h2><p>Vous pouvez maintenant accéder au chat et poser vos questions à l’assistant.</p></div>
-              <button type="button" class="primary-button" (click)="finishOnboarding()">Accéder au chat <span aria-hidden="true">→</span></button>
+              <div class="completion-panel__content"><p class="eyebrow">Configuration terminée</p><h2>Votre espace est prêt.</h2><p>Vous pouvez maintenant accéder au chat et poser vos questions à l’assistant.</p><button type="button" class="primary-button" (click)="finishOnboarding()">Accéder au chat <span aria-hidden="true">→</span></button></div>
             </section>
           }
         }

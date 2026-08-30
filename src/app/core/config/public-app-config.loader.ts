@@ -37,12 +37,16 @@ function isPublicAppConfig(value: unknown): value is PublicAppConfig {
 
   return (
     config.launchMode === LaunchMode.Certification &&
-    isNonEmptyString(config.entraClientId) &&
-    isNonEmptyString(config.entraAuthority) &&
-    isNonEmptyString(config.entraScope)
+    isConfiguredValue(config.entraClientId) &&
+    isConfiguredValue(config.entraAuthority) &&
+    isConfiguredValue(config.entraScope)
   );
 }
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.length > 0;
+}
+
+function isConfiguredValue(value: unknown): value is string {
+  return isNonEmptyString(value) && !value.startsWith('replace-with-');
 }

@@ -5,7 +5,7 @@ import {
   signal,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { forkJoin } from 'rxjs';
+import { catchError, concatMap, forkJoin, from, map, of, toArray } from 'rxjs';
 
 import { Microsoft365ApiService } from '../../../../core/services/api/microsoft365-api.service';
 import { ApplicationNavigationService } from '../../../../core/services/navigation/application-navigation.service';
@@ -40,6 +40,7 @@ export class Microsoft365AdministrationPage {
   });
   protected readonly drives = signal<readonly Microsoft365Drive[]>([]);
   protected readonly errorMessage = signal<string | null>(null);
+  protected readonly hasSitesLoadError = signal(false);
   protected readonly isLoadingSites = signal(false);
   protected readonly isLoadingSources = signal(false);
   protected readonly isLoadingStatus = signal(true);
@@ -49,6 +50,10 @@ export class Microsoft365AdministrationPage {
   protected readonly lists = signal<readonly Microsoft365List[]>([]);
   protected readonly onboardingStatus =
     signal<Microsoft365OnboardingStatus | null>(null);
+  protected readonly pendingSiteIds = signal<ReadonlySet<string>>(new Set());
+  protected readonly pendingSiteCount = computed(
+    () => this.pendingSiteIds().size,
+  );
   protected readonly selectedSite = signal<Microsoft365Site | null>(null);
   protected readonly sites = signal<readonly Microsoft365Site[]>([]);
   protected readonly updatingSourceIds = signal<ReadonlySet<string>>(new Set());
@@ -129,6 +134,82 @@ export class Microsoft365AdministrationPage {
         this.isSelectingSite.set(false);
         this.errorMessage.set(this.getErrorMessage(error));
       },
+    });
+  }
+
+  protected isSitePending(siteId: string): boolean {
+    return this.pendingSiteIds().has(siteId);
+  }
+
+  protected togglePendingSite(site: Microsoft365Site): void {
+    if (
+      site.isSelected ||
+      this.isSelectingSite() ||
+      !this.onboardingStatus()?.isAdministrator
+    ) {
+      return;
+    }
+
+    this.errorMessage.set(null);
+    this.pendingSiteIds.update((current) => {
+      const updated = new Set(current);
+      if (updated.has(site.siteId)) {
+        updated.delete(site.siteId);
+      } else {
+        updated.add(site.siteId);
+      }
+      return updated;
+    });
+  }
+
+  protected confirmSiteSelection(): void {
+    const siteIds = [...this.pendingSiteIds()];
+    if (siteIds.length === 0 || this.isSelectingSite()) {
+      return;
+    }
+
+    this.isSelectingSite.set(true);
+    this.errorMessage.set(null);
+    from(siteIds).pipe(
+      concatMap((siteId) =>
+        this.microsoft365ApiService.selectSite(siteId).pipe(
+          map((site) => ({ error: null, site })),
+          catchError((error: unknown) => of({ error, site: null })),
+        ),
+      ),
+      toArray(),
+    ).subscribe((results) => {
+      const selectedSites = results.flatMap((result) =>
+        result.site === null ? [] : [result.site],
+      );
+      const selectedSiteIds = new Set(
+        selectedSites.map((site) => site.siteId),
+      );
+      this.sites.update((sites) =>
+        sites.map((site) =>
+          selectedSiteIds.has(site.siteId)
+            ? { ...site, isSelected: true }
+            : site,
+        ),
+      );
+      this.pendingSiteIds.set(
+        new Set(siteIds.filter((siteId) => !selectedSiteIds.has(siteId))),
+      );
+      this.selectedSite.set(selectedSites[0] ?? this.selectedSite());
+      this.isSelectingSite.set(false);
+
+      const failedResult = results.find((result) => result.error !== null);
+      if (selectedSites.length > 0 && failedResult === undefined) {
+        this.onboardingStatus.update((status) =>
+          status === null
+            ? null
+            : { ...status, hasSelectedSite: true, isComplete: true },
+        );
+      }
+
+      if (failedResult !== undefined) {
+        this.errorMessage.set(this.getErrorMessage(failedResult.error));
+      }
     });
   }
 
@@ -219,9 +300,11 @@ export class Microsoft365AdministrationPage {
 
   private loadSites(): void {
     this.isLoadingSites.set(true);
+    this.hasSitesLoadError.set(false);
     this.microsoft365ApiService.getSites().subscribe({
       next: ({ sites }) => {
         this.sites.set(sites);
+        this.pendingSiteIds.set(new Set());
         this.isLoadingSites.set(false);
         const selectedSite = sites.find((site) => site.isSelected) ?? null;
         this.selectedSite.set(selectedSite);
@@ -231,6 +314,7 @@ export class Microsoft365AdministrationPage {
       },
       error: (error: unknown) => {
         this.isLoadingSites.set(false);
+        this.hasSitesLoadError.set(true);
         this.errorMessage.set(this.getErrorMessage(error));
       },
     });

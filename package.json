@@ -4,6 +4,8 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
+    "start:certification": "ng serve --configuration certification",
+    "start:entra": "npm run start:certification",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
