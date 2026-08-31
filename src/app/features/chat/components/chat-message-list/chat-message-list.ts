@@ -13,6 +13,6 @@ import { UserMessage } from '../user-message/user-message';
   templateUrl: './chat-message-list.html',
 })
 export class ChatMessageList {
-  readonly isProcessing = input(false);
   readonly messages = input<readonly ChatMessageModel[]>([]);
+  readonly processingMessage = input<string | null>(null);
 }
