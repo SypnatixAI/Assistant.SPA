@@ -36,6 +36,7 @@ const INITIAL_STATE: AuthenticationState = {
 
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
+  private loginInProgress = false;
   private readonly state = signal<AuthenticationState>(INITIAL_STATE);
 
   readonly errorMessage = computed(() => this.state().errorMessage);
@@ -73,6 +74,11 @@ export class AuthenticationService {
   }
 
   login(): void {
+    if (this.loginInProgress) {
+      return;
+    }
+
+    this.loginInProgress = true;
     this.state.set(INITIAL_STATE);
     this.authenticationProvider
       .login()
@@ -81,7 +87,12 @@ export class AuthenticationService {
           hasAccessToken ? this.initializeAssistantCoreSession() : of(undefined),
         ),
       )
-      .subscribe({ error: (error: unknown) => this.handleError(error) });
+      .subscribe({
+        error: (error: unknown) => {
+          this.loginInProgress = false;
+          this.handleError(error);
+        },
+      });
   }
 
   logout(): void {

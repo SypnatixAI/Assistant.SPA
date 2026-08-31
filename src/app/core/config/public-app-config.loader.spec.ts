@@ -76,6 +76,22 @@ describe('loadPublicAppConfig', () => {
     await expectAsync(action).toBeRejectedWithError('La configuration publique est invalide.');
   });
 
+  it('Given_CertificationConfigWithPlaceholder_When_loadPublicAppConfigIsCalled_Then_ErrorIsThrown', async () => {
+    // Given
+    const fetchImplementation = jasmine.createSpy<typeof fetch>('fetch').and.resolveTo(
+      createResponse(true, 200, {
+        ...validConfig,
+        entraClientId: 'replace-with-public-client-id',
+      }),
+    );
+
+    // When
+    const action = loadPublicAppConfig(fetchImplementation);
+
+    // Then
+    await expectAsync(action).toBeRejectedWithError('La configuration publique est invalide.');
+  });
+
   it('Given_LocalConfigWithoutTokenUrl_When_loadPublicAppConfigIsCalled_Then_ErrorIsThrown', async () => {
     // Given
     const fetchImplementation = jasmine.createSpy<typeof fetch>('fetch').and.resolveTo(

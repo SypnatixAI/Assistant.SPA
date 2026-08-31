@@ -77,9 +77,10 @@
 - Structurer le corps des tests avec `// Given`, `// When` et `// Then`.
 - Tester les états de chargement, de succès, vide et d’erreur lorsqu’ils sont
   pertinents pour l’interface.
-- Après chaque ajout ou modification de fonctionnalité, exécuter `npm run verify`.
-- Si la vérification complète ne peut pas être exécutée, expliquer clairement la
-  raison et ne pas présenter la fonctionnalité comme entièrement validée.
+- Ne jamais lancer les tests, qu'ils soient ciblés ou complets, et ne jamais exécuter `npm run verify` puisqu'il contient les tests.
+- Exécuter uniquement le build avec `npm run build` lorsqu'une modification importante implique plusieurs fichiers.
+- Pour une correction ponctuelle ou une modification ciblée, ne lancer ni test ni build.
+- Ne jamais présenter les tests comme validés puisqu'ils ne sont pas exécutés par Codex.
 - Ne jamais supprimer, désactiver ou assouplir un test uniquement pour faire
   passer le CI.
 

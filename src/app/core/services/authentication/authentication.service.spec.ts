@@ -130,6 +130,20 @@ describe('AuthenticationService', () => {
     expect(service.status()).toBe(AuthenticationStatus.Authenticated);
   });
 
+  it('Given_LoginAlreadyInProgress_When_loginIsCalled_Then_ProviderIsNotCalledAgain', () => {
+    // Given
+    authenticationProvider.login.and.returnValue(of(false));
+    const service = TestBed.inject(AuthenticationService);
+    service.login();
+
+    // When
+    service.login();
+
+    // Then
+    expect(authenticationProvider.login).toHaveBeenCalledTimes(1);
+    expect(service.status()).toBe(AuthenticationStatus.Loading);
+  });
+
   it('Given_AuthenticatedSession_When_logoutIsCalled_Then_SessionAndProviderAreCleared', async () => {
     // Given
     authenticationProvider.initialize.and.returnValue(of(true));

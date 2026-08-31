@@ -6,7 +6,7 @@
       <app-user-message [content]="message.content" />
     }
   }
-  @if (isProcessing()) {
-    <app-chat-processing />
+  @if (processingMessage(); as message) {
+    <app-chat-processing [message]="message" />
   }
 </section>

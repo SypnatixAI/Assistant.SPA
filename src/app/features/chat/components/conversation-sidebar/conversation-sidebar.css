@@ -37,7 +37,7 @@
   position: relative;
   border-radius: 0.65rem;
   color: #fff;
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   font-weight: 750;
 }
 
@@ -49,7 +49,7 @@
   height: 0.32rem;
   border: 2px solid var(--color-primary);
   border-radius: 50%;
-  background: #82d3c7;
+  background: #91d8cf;
 }
 .brand__name {
   min-width: 0;
@@ -94,7 +94,7 @@
   border: 1px solid var(--color-primary);
   border-radius: 0.75rem;
   color: #fff;
-  background: var(--color-primary);
+  background: var(--gradient-primary);
   font-weight: 650;
   cursor: pointer;
 }
@@ -109,7 +109,7 @@
 
 .new-conversation:hover {
   border-color: var(--color-primary-hover);
-  background: var(--color-primary-hover);
+  background: linear-gradient(135deg, #109186, #116878);
 }
 nav button:hover {
   background: var(--color-sidebar-hover);

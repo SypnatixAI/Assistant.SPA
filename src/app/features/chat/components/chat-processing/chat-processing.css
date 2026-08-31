@@ -1,25 +1,19 @@
 .processing {
-  min-height: 2rem;
+  min-height: 1.75rem;
   display: flex;
   align-items: center;
-  gap: 0.3rem;
+  gap: 0.45rem;
   padding-left: 2.85rem;
+  color: var(--color-text-muted);
+  font-size: 0.76rem;
 }
 
-.processing > span:not(.visually-hidden) {
-  width: 0.45rem;
-  height: 0.45rem;
+.processing__indicator {
+  width: 0.38rem;
+  height: 0.38rem;
   border-radius: 50%;
-  background: var(--color-primary);
-  animation: pulse 1.2s ease-in-out infinite;
-}
-
-.processing > span:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.processing > span:nth-child(3) {
-  animation-delay: 0.3s;
+  background: currentColor;
+  animation: pulse 1.4s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -37,7 +31,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .processing > span:not(.visually-hidden) {
+  .processing__indicator {
     animation: none;
     opacity: 0.7;
   }

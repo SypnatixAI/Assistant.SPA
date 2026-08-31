@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -6,4 +6,6 @@ import { ChangeDetectionStrategy, Component } from '@angular/core';
   styleUrl: './chat-processing.css',
   templateUrl: './chat-processing.html',
 })
-export class ChatProcessing {}
+export class ChatProcessing {
+  readonly message = input.required<string>();
+}

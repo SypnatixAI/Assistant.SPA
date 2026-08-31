@@ -39,7 +39,8 @@
                   "glob": "**/*",
                   "input": "public",
                   "ignore": [
-                    "assets/config/config.json"
+                    "assets/config/config.json",
+                    "assets/config/config.certification.json"
                   ]
                 }
               ],
@@ -61,6 +62,17 @@
               "optimization": false,
               "extractLicenses": false,
               "sourceMap": true
+            },
+            "certification": {
+              "fileReplacements": [
+                {
+                  "replace": "src/app/core/config/public-app-config-path.ts",
+                  "with": "src/app/core/config/public-app-config-path.certification.ts"
+                }
+              ],
+              "optimization": false,
+              "extractLicenses": false,
+              "sourceMap": true
             }
           },
           "defaultConfiguration": "production"
@@ -76,6 +88,9 @@
             },
             "development": {
               "buildTarget": "assistant-spa:build:development"
+            },
+            "certification": {
+              "buildTarget": "assistant-spa:build:certification"
             }
           },
           "defaultConfiguration": "development"

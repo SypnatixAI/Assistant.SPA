@@ -103,12 +103,6 @@
   background: var(--color-surface);
 }
 
-.usage-toolbar {
-  display: flex;
-  justify-content: flex-end;
-  margin-bottom: 0.4rem;
-}
-
 .history-state {
   margin: auto;
   padding: 1rem;
@@ -190,24 +184,18 @@
     inset: 0;
     z-index: 10;
     display: block;
-    background: rgb(14 28 38 / 46%);
+    background: rgb(13 48 52 / 46%);
     animation: backdrop-in 160ms ease-out;
   }
   .mobile-navigation__panel {
     width: min(88vw, 19rem);
     height: 100%;
-    box-shadow: 12px 0 34px rgb(14 28 38 / 22%);
+    box-shadow: 12px 0 34px rgb(13 48 52 / 22%);
     animation: panel-in 180ms ease-out;
   }
   .composer-shell {
     padding-right: 0.75rem;
     padding-left: 0.75rem;
-  }
-}
-
-@media (max-width: 40rem) {
-  .usage-toolbar {
-    justify-content: flex-start;
   }
 }
 

@@ -16,14 +16,6 @@
     (keydown)="handleKeydown($event)"
   ></textarea>
   <div class="composer__footer">
-    <app-model-selector
-      [models]="models()"
-      [selectedModelId]="selectedModelId()"
-      [isLoading]="isModelLoading()"
-      [error]="modelError()"
-      (modelSelected)="modelSelected.emit($event)"
-      (refreshRequested)="modelRefreshRequested.emit()"
-    />
     <div class="composer__actions">
       <div class="composer__meta">
         @if (messageControl.hasError('maxlength')) {

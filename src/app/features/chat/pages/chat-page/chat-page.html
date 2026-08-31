@@ -102,40 +102,22 @@
                 (questionSelected)="useSuggestedQuestion($event)"
               />
             } @else {
-              <app-chat-message-list [isProcessing]="isProcessing()" [messages]="messages()" />
+              <app-chat-message-list
+                [messages]="messages()"
+                [processingMessage]="processingMessage()"
+              />
             }
           }
         }
       </div>
 
       <footer class="composer-shell">
-        @if (
-          tokenUsageState.isLoading() ||
-          tokenUsageState.error() ||
-          tokenUsageState.isExhausted()
-        ) {
-          <div class="usage-toolbar">
-            <app-usage-indicator
-              [usage]="tokenUsageState.usage()"
-              [isExhausted]="tokenUsageState.isExhausted()"
-              [isLoading]="tokenUsageState.isLoading()"
-              [error]="tokenUsageState.error()"
-              (refreshRequested)="tokenUsageState.load()"
-            />
-          </div>
-        }
         @if (sendError(); as errorMessage) {
           <p class="send-error" role="alert">{{ errorMessage }}</p>
         }
         <app-chat-composer
           [disabled]="!canSubmitMessage()"
-          [models]="modelCatalogState.models()"
-          [selectedModelId]="modelCatalogState.selectedModelId()"
-          [isModelLoading]="modelCatalogState.isLoading()"
-          [modelError]="modelCatalogState.error()"
           (messageSubmitted)="submitMessage($event)"
-          (modelSelected)="modelCatalogState.selectModel($event)"
-          (modelRefreshRequested)="modelCatalogState.load()"
         />
         <p>Les réponses peuvent contenir des erreurs. Vérifiez les informations importantes.</p>
       </footer>
