@@ -79,7 +79,10 @@
             (questionSelected)="useSuggestedQuestion($event)"
           />
         } @else {
-          <app-chat-message-list [isProcessing]="isProcessing()" [messages]="messages()" />
+          <app-chat-message-list
+            [messages]="messages()"
+            [processingMessage]="processingMessage()"
+          />
         }
       </div>
 
