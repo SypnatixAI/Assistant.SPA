@@ -103,6 +103,24 @@
   background: var(--color-surface);
 }
 
+.history-state {
+  margin: auto;
+  padding: 1rem;
+  color: var(--color-text-muted);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.history-state button {
+  margin-top: 0.6rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: 0.55rem;
+  color: var(--color-primary);
+  background: var(--color-surface);
+  cursor: pointer;
+}
+
 .send-error {
   margin: 0 0 0.5rem;
   color: var(--color-danger);

@@ -2,13 +2,19 @@
   <main class="chat-shell">
     <div class="desktop-sidebar" [attr.inert]="isNavigationOpen() ? '' : null">
       <app-conversation-sidebar
-        [conversations]="conversations()"
+        [conversations]="conversationListState.conversations()"
+        [errorMessage]="conversationListState.errorMessage"
+        [hasNextPage]="conversationListState.hasNextPage()"
+        [isLoadingNextPage]="conversationListState.isLoadingNextPage()"
+        [nextPageErrorMessage]="conversationListState.nextPageError()"
         [selectedConversationId]="selectedConversationId()"
         [session]="currentSession"
-        [status]="sidebarStatus()"
+        [status]="conversationListState.status()"
         (conversationSelected)="selectConversation($event)"
         (logoutRequested)="logout()"
         (newConversationRequested)="startNewConversation()"
+        (nextPageRequested)="conversationListState.loadNextPage()"
+        (retryRequested)="conversationListState.load()"
       />
     </div>
 
@@ -27,14 +33,20 @@
           aria-label="Conversations"
         >
           <app-conversation-sidebar
-            [conversations]="conversations()"
+            [conversations]="conversationListState.conversations()"
+            [errorMessage]="conversationListState.errorMessage"
+            [hasNextPage]="conversationListState.hasNextPage()"
+            [isLoadingNextPage]="conversationListState.isLoadingNextPage()"
+            [nextPageErrorMessage]="conversationListState.nextPageError()"
             [selectedConversationId]="selectedConversationId()"
             [session]="currentSession"
-            [status]="sidebarStatus()"
+            [status]="conversationListState.status()"
             (closed)="closeNavigation()"
             (conversationSelected)="selectConversation($event)"
             (logoutRequested)="logout()"
             (newConversationRequested)="startNewConversation()"
+            (nextPageRequested)="conversationListState.loadNextPage()"
+            (retryRequested)="conversationListState.load()"
           />
         </div>
       </div>
@@ -72,17 +84,30 @@
       </header>
 
       <div #conversationScroll class="conversation-scroll">
-        @if (messages().length === 0) {
-          <app-chat-welcome
-            [displayName]="currentSession.user.displayName"
-            [organizationName]="currentSession.organization.name"
-            (questionSelected)="useSuggestedQuestion($event)"
-          />
-        } @else {
-          <app-chat-message-list
-            [messages]="messages()"
-            [processingMessage]="processingMessage()"
-          />
+        @switch (historyStatus()) {
+          @case ('loading') {
+            <p class="history-state" role="status">Chargement de la conversation…</p>
+          }
+          @case ('error') {
+            <div class="history-state" role="alert">
+              <p>Cette conversation n’a pas pu être chargée.</p>
+              <button type="button" (click)="retryConversationHistory()">Réessayer</button>
+            </div>
+          }
+          @default {
+            @if (messages().length === 0) {
+              <app-chat-welcome
+                [displayName]="currentSession.user.displayName"
+                [organizationName]="currentSession.organization.name"
+                (questionSelected)="useSuggestedQuestion($event)"
+              />
+            } @else {
+              <app-chat-message-list
+                [messages]="messages()"
+                [processingMessage]="processingMessage()"
+              />
+            }
+          }
         }
       </div>
 
