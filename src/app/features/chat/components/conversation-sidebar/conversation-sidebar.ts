@@ -33,6 +33,7 @@ export class ConversationSidebar {
   readonly errorMessage = input('Impossible de charger les conversations.');
   readonly hasNextPage = input(false);
   readonly isLoadingNextPage = input(false);
+  readonly nextPageErrorMessage = input<string | null>(null);
   readonly selectedConversationId = input<string | null>(null);
   readonly session = input.required<AuthenticatedSession>();
   readonly status = input<ConversationListStatus>('ready');

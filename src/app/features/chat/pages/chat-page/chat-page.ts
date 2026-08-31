@@ -9,8 +9,9 @@ import {
   viewChild,
   viewChildren,
 } from '@angular/core';
-import { finalize } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 
+import { ConversationsApiService } from '../../../../core/services/api/conversations-api.service';
 import { MessagesApiService } from '../../../../core/services/api/messages-api.service';
 import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
@@ -20,14 +21,14 @@ import { ChatComposer } from '../../components/chat-composer/chat-composer';
 import { ChatMessageList } from '../../components/chat-message-list/chat-message-list';
 import { ChatWelcome } from '../../components/chat-welcome/chat-welcome';
 import { ConversationSidebar } from '../../components/conversation-sidebar/conversation-sidebar';
+import { ConversationListState } from '../../../conversations/state/conversation-list.state';
 import { ModelCatalogState } from '../../../models/state/model-catalog.state';
 import { UsageIndicator } from '../../../usage/components/usage-indicator/usage-indicator';
 import { TokenUsageState } from '../../../usage/state/token-usage.state';
-import {
-  ChatConversationSummary,
-  ChatMessage,
-  ConversationListStatus,
-} from '../../models/chat-view-models';
+import { toChatMessage } from '../../models/chat-view-mappers';
+import { ChatMessage } from '../../models/chat-view-models';
+
+type ConversationHistoryStatus = 'error' | 'loading' | 'ready';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -39,13 +40,12 @@ import {
 export class ChatPage {
   readonly session: Signal<AuthenticatedSession | null>;
 
-  protected readonly conversations = signal<readonly ChatConversationSummary[]>([]);
   protected readonly isNavigationOpen = signal(false);
   protected readonly isProcessing = signal(false);
   protected readonly sendError = signal<string | null>(null);
   protected readonly messages = signal<readonly ChatMessage[]>([]);
   protected readonly selectedConversationId = signal<string | null>(null);
-  protected readonly sidebarStatus = signal<ConversationListStatus>('ready');
+  protected readonly historyStatus = signal<ConversationHistoryStatus>('ready');
   protected readonly canSubmitMessage = computed(
     () =>
       !this.isProcessing() &&
@@ -60,12 +60,15 @@ export class ChatPage {
   protected readonly conversationTitle = computed(() => {
     const selectedConversationId = this.selectedConversationId();
     return (
-      this.conversations().find((conversation) => conversation.id === selectedConversationId)
-        ?.title ?? 'Nouvelle conversation'
+      this.conversationListState
+        .conversations()
+        .find((conversation) => conversation.id === selectedConversationId)?.title ??
+      'Nouvelle conversation'
     );
   });
 
   private nextLocalMessageId = 1;
+  private historySubscription: Subscription | null = null;
   private readonly composer = viewChild(ChatComposer);
   private readonly conversationScroll =
     viewChild<ElementRef<HTMLElement>>('conversationScroll');
@@ -75,11 +78,14 @@ export class ChatPage {
 
   constructor(
     private readonly authenticationService: AuthenticationService,
+    private readonly conversationsApiService: ConversationsApiService,
     private readonly messagesApiService: MessagesApiService,
+    protected readonly conversationListState: ConversationListState,
     protected readonly modelCatalogState: ModelCatalogState,
     protected readonly tokenUsageState: TokenUsageState,
   ) {
     this.session = authenticationService.session;
+    this.conversationListState.load();
     this.modelCatalogState.load();
     this.tokenUsageState.load();
   }
@@ -109,6 +115,8 @@ export class ChatPage {
   }
 
   startNewConversation(): void {
+    this.historySubscription?.unsubscribe();
+    this.historyStatus.set('ready');
     this.selectedConversationId.set(null);
     this.messages.set([]);
     this.isProcessing.set(false);
@@ -121,7 +129,45 @@ export class ChatPage {
   selectConversation(conversationId: string): void {
     this.selectedConversationId.set(conversationId);
     this.messages.set([]);
+    this.sendError.set(null);
     this.closeNavigation();
+    this.loadConversationHistory(conversationId);
+  }
+
+  retryConversationHistory(): void {
+    const selectedConversationId = this.selectedConversationId();
+    if (selectedConversationId !== null) {
+      this.loadConversationHistory(selectedConversationId);
+    }
+  }
+
+  /**
+   * Charge la page la plus récente de l'historique. Une réponse qui arrive après
+   * un changement de conversation est ignorée afin de ne jamais afficher les
+   * messages d'une autre conversation.
+   */
+  private loadConversationHistory(conversationId: string): void {
+    this.historySubscription?.unsubscribe();
+    this.historyStatus.set('loading');
+
+    this.historySubscription = this.conversationsApiService
+      .getMessages(conversationId)
+      .subscribe({
+        next: (page) => {
+          if (this.selectedConversationId() !== conversationId) {
+            return;
+          }
+
+          this.messages.set(page.messages.map(toChatMessage));
+          this.historyStatus.set('ready');
+          this.scrollConversationToBottom();
+        },
+        error: () => {
+          if (this.selectedConversationId() === conversationId) {
+            this.historyStatus.set('error');
+          }
+        },
+      });
   }
 
   useSuggestedQuestion(question: string): void {
