@@ -1,9 +1,10 @@
 import { loadPublicAppConfig } from './public-app-config.loader';
-import { LaunchMode, PublicAppConfig } from './public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from './public-app-config';
 
 describe('loadPublicAppConfig', () => {
   const validConfig: PublicAppConfig = {
     apiBaseUrl: 'https://api.example.com',
+    authenticationMode: AuthenticationMode.MicrosoftEntra,
     authenticationUrl: '/local-auth/token',
     launchMode: LaunchMode.Certification,
     entraClientId: 'public-client-id',
@@ -15,11 +16,12 @@ describe('loadPublicAppConfig', () => {
     // Given
     const localConfig: PublicAppConfig = {
       apiBaseUrl: '/',
+      authenticationMode: AuthenticationMode.LocalJwt,
       authenticationUrl: '/local-auth/token',
       entraAuthority: '',
       entraClientId: '',
       entraScope: '',
-      launchMode: LaunchMode.Local,
+      launchMode: LaunchMode.Dev,
     };
     const fetchImplementation = jasmine
       .createSpy<typeof fetch>('fetch')
@@ -97,7 +99,8 @@ describe('loadPublicAppConfig', () => {
     const fetchImplementation = jasmine.createSpy<typeof fetch>('fetch').and.resolveTo(
       createResponse(true, 200, {
         apiBaseUrl: '/',
-        launchMode: LaunchMode.Local,
+        authenticationMode: AuthenticationMode.LocalJwt,
+        launchMode: LaunchMode.Dev,
       }),
     );
 

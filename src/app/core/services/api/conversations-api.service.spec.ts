@@ -9,7 +9,7 @@ import {
 } from '../../../domain/conversations/conversation';
 import { ApiError } from '../../../domain/errors/api-error';
 import { apiErrorInterceptor } from '../../interceptors/api-error.interceptor';
-import { LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
 import { ConversationsApiService } from './conversations-api.service';
 
 describe('ConversationsApiService', () => {
@@ -27,6 +27,7 @@ describe('ConversationsApiService', () => {
           provide: PUBLIC_APP_CONFIG,
           useValue: {
             apiBaseUrl: 'https://api.example.com/',
+            authenticationMode: AuthenticationMode.MicrosoftEntra,
             authenticationUrl: '/local-auth/token',
             launchMode: LaunchMode.Certification,
             entraAuthority: 'https://login.microsoftonline.com/organizations',

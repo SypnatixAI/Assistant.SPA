@@ -23,7 +23,11 @@ import {
   MsalService,
 } from '@azure/msal-angular';
 
-import { LaunchMode, PUBLIC_APP_CONFIG, PublicAppConfig } from './core/config/public-app-config';
+import {
+  AuthenticationMode,
+  PUBLIC_APP_CONFIG,
+  PublicAppConfig,
+} from './core/config/public-app-config';
 import { routes } from './app.routes';
 import { GlobalErrorHandler } from './core/errors/global-error.handler';
 import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
@@ -63,7 +67,7 @@ export function createAppConfig(publicAppConfig: PublicAppConfig): ApplicationCo
 }
 
 function createAuthenticationProviders(publicAppConfig: PublicAppConfig): Provider[] {
-  if (publicAppConfig.launchMode === LaunchMode.Local) {
+  if (publicAppConfig.authenticationMode === AuthenticationMode.LocalJwt) {
     return [
       {
         provide: AUTHENTICATION_PROVIDER,

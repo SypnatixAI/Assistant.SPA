@@ -1,18 +1,19 @@
 import { HttpHandler, HttpRequest, HttpResponse } from '@angular/common/http';
 import { firstValueFrom, of } from 'rxjs';
 
-import { LaunchMode, PublicAppConfig } from '../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from '../config/public-app-config';
 import { LocalAccessTokenService } from '../services/authentication/local-access-token.service';
 import { LocalJwtInterceptor } from './local-jwt.interceptor';
 
 describe('LocalJwtInterceptor', () => {
   const publicAppConfig: PublicAppConfig = {
     apiBaseUrl: '/',
+    authenticationMode: AuthenticationMode.LocalJwt,
     authenticationUrl: '/local-auth/token',
     entraAuthority: '',
     entraClientId: '',
     entraScope: '',
-    launchMode: LaunchMode.Local,
+    launchMode: LaunchMode.Dev,
   };
 
   it('Given_LocalAccessToken_When_interceptIsCalled_Then_BearerTokenIsAddedToApiRequest', async () => {

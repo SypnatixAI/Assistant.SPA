@@ -3,7 +3,6 @@ import { of, throwError } from 'rxjs';
 
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
 import { ApiError } from '../../../domain/errors/api-error';
-import { LaunchMode } from '../../config/public-app-config';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider } from './authentication-provider';
@@ -26,7 +25,7 @@ describe('AuthenticationService', () => {
     login: jasmine.Spy;
     recover: jasmine.Spy;
     logout: jasmine.Spy;
-    launchMode: LaunchMode;
+    isLocalAuthentication: boolean;
   };
   let technicalErrorService: { report: jasmine.Spy };
 
@@ -39,7 +38,7 @@ describe('AuthenticationService', () => {
       login: jasmine.createSpy('login').and.returnValue(of(true)),
       recover: jasmine.createSpy('recover').and.returnValue(of(true)),
       logout: jasmine.createSpy('logout').and.returnValue(of(undefined)),
-      launchMode: LaunchMode.Local,
+      isLocalAuthentication: true,
     };
     technicalErrorService = { report: jasmine.createSpy('report') };
 

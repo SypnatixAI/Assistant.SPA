@@ -2,7 +2,11 @@ import { ProviderToken, Type } from '@angular/core';
 import { MSAL_INSTANCE } from '@azure/msal-angular';
 
 import { createAppConfig } from './app.config';
-import { LaunchMode, PublicAppConfig } from './core/config/public-app-config';
+import {
+  AuthenticationMode,
+  LaunchMode,
+  PublicAppConfig,
+} from './core/config/public-app-config';
 import { AUTHENTICATION_PROVIDER } from './core/services/authentication/authentication-provider';
 import { LocalJwtAuthenticationProvider } from './core/services/authentication/local-jwt-authentication.provider';
 import { MicrosoftEntraAuthenticationProvider } from './core/services/authentication/microsoft-entra-authentication.provider';
@@ -10,7 +14,7 @@ import { MicrosoftEntraAuthenticationProvider } from './core/services/authentica
 describe('createAppConfig', () => {
   it('Given_LocalLaunchMode_When_createAppConfigIsCalled_Then_OnlyMockAuthenticationIsRegistered', () => {
     // Given
-    const publicAppConfig = createPublicAppConfig(LaunchMode.Local);
+    const publicAppConfig = createPublicAppConfig(AuthenticationMode.LocalJwt, LaunchMode.Dev);
 
     // When
     const result = createAppConfig(publicAppConfig);
@@ -24,7 +28,10 @@ describe('createAppConfig', () => {
 
   it('Given_CertificationLaunchMode_When_createAppConfigIsCalled_Then_OnlyMicrosoftAuthenticationIsRegistered', () => {
     // Given
-    const publicAppConfig = createPublicAppConfig(LaunchMode.Certification);
+    const publicAppConfig = createPublicAppConfig(
+      AuthenticationMode.MicrosoftEntra,
+      LaunchMode.Certification,
+    );
 
     // When
     const result = createAppConfig(publicAppConfig);
@@ -37,9 +44,13 @@ describe('createAppConfig', () => {
   });
 });
 
-function createPublicAppConfig(launchMode: LaunchMode): PublicAppConfig {
+function createPublicAppConfig(
+  authenticationMode: AuthenticationMode,
+  launchMode: LaunchMode,
+): PublicAppConfig {
   return {
     apiBaseUrl: '/',
+    authenticationMode,
     authenticationUrl: '/local-auth/token',
     entraAuthority: 'https://login.microsoftonline.com/organizations',
     entraClientId: 'spa-client-id',

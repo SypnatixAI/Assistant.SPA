@@ -1,6 +1,7 @@
 {
   "apiBaseUrl": "/",
-  "launchMode": "Local",
+  "authenticationMode": "LocalJwt",
+  "launchMode": "Dev",
   "authenticationUrl": "/local-auth/token",
   "entraClientId": "replace-with-public-client-id",
   "entraAuthority": "https://login.microsoftonline.com/common",

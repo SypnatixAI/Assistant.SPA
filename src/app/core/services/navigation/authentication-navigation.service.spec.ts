@@ -2,7 +2,7 @@ import { MsalService } from '@azure/msal-angular';
 import { AccountInfo } from '@azure/msal-browser';
 import { of } from 'rxjs';
 
-import { LaunchMode, PublicAppConfig } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from '../../config/public-app-config';
 import { ApplicationNavigationService } from './application-navigation.service';
 import { AuthenticationNavigationService } from './authentication-navigation.service';
 
@@ -10,6 +10,7 @@ describe('AuthenticationNavigationService', () => {
   const account = { homeAccountId: 'account-id' } as AccountInfo;
   const publicAppConfig: PublicAppConfig = {
     apiBaseUrl: '/',
+    authenticationMode: AuthenticationMode.MicrosoftEntra,
     authenticationUrl: '/local-auth/token',
     launchMode: LaunchMode.Certification,
     entraAuthority: 'https://login.microsoftonline.com/organizations',

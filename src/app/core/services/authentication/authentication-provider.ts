@@ -1,10 +1,8 @@
 import { InjectionToken } from '@angular/core';
 import { Observable } from 'rxjs';
 
-import { LaunchMode } from '../../config/public-app-config';
-
 export interface AuthenticationProvider {
-  readonly launchMode: LaunchMode;
+  readonly isLocalAuthentication: boolean;
 
   initialize(): Observable<boolean>;
   login(): Observable<boolean>;
