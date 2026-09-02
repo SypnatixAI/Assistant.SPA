@@ -1,12 +1,13 @@
 import { InteractionType } from '@azure/msal-browser';
 
-import { LaunchMode, PublicAppConfig } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from '../../config/public-app-config';
 import { ApplicationNavigationService } from '../navigation/application-navigation.service';
 import { createMsalGuardConfig, createMsalInterceptorConfig } from './msal-config.factory';
 
 describe('MSAL configuration factories', () => {
   const publicAppConfig: PublicAppConfig = {
     apiBaseUrl: 'https://api.example.com',
+    authenticationMode: AuthenticationMode.MicrosoftEntra,
     authenticationUrl: '/local-auth/token',
     launchMode: LaunchMode.Certification,
     entraAuthority: 'https://login.microsoftonline.com/organizations',

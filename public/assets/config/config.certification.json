@@ -1,5 +1,6 @@
 {
   "apiBaseUrl": "/",
+  "authenticationMode": "MicrosoftEntra",
   "launchMode": "Certification",
   "authenticationUrl": "/local-auth/token",
   "entraClientId": "97fda345-b54e-4243-b05a-31623871df18",

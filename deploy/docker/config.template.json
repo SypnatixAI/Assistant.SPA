@@ -1,0 +1,9 @@
+{
+  "apiBaseUrl": "${SPA_API_BASE_URL}",
+  "authenticationMode": "${SPA_AUTHENTICATION_MODE}",
+  "launchMode": "${SPA_LAUNCH_MODE}",
+  "authenticationUrl": "${SPA_AUTHENTICATION_URL}",
+  "entraClientId": "${SPA_ENTRA_CLIENT_ID}",
+  "entraAuthority": "${SPA_ENTRA_AUTHORITY}",
+  "entraScope": "${SPA_ENTRA_SCOPE}"
+}

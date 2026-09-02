@@ -1,14 +1,13 @@
 import { Injectable } from '@angular/core';
 import { map, Observable, of } from 'rxjs';
 
-import { LaunchMode } from '../../config/public-app-config';
 import { MockAuthenticationApiService } from '../api/mock-authentication-api.service';
 import { AuthenticationProvider } from './authentication-provider';
 import { LocalAccessTokenService } from './local-access-token.service';
 
 @Injectable({ providedIn: 'root' })
 export class LocalJwtAuthenticationProvider implements AuthenticationProvider {
-  readonly launchMode = LaunchMode.Local;
+  readonly isLocalAuthentication = true;
 
   constructor(
     private readonly mockAuthenticationApiService: MockAuthenticationApiService,

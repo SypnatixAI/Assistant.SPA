@@ -1,12 +1,18 @@
 import { InjectionToken } from '@angular/core';
 
 export enum LaunchMode {
-  Local = 'Local',
+  Dev = 'Dev',
   Certification = 'Certification',
+}
+
+export enum AuthenticationMode {
+  LocalJwt = 'LocalJwt',
+  MicrosoftEntra = 'MicrosoftEntra',
 }
 
 export interface PublicAppConfig {
   readonly apiBaseUrl: string;
+  readonly authenticationMode: AuthenticationMode;
   readonly authenticationUrl: string;
   readonly launchMode: LaunchMode;
   readonly entraClientId: string;

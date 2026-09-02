@@ -6,7 +6,7 @@ import {
 } from '@azure/msal-browser';
 import { firstValueFrom, of, throwError } from 'rxjs';
 
-import { LaunchMode, PublicAppConfig } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from '../../config/public-app-config';
 import { AuthenticationNavigationService } from '../navigation/authentication-navigation.service';
 import { MicrosoftEntraAuthenticationProvider } from './microsoft-entra-authentication.provider';
 
@@ -19,6 +19,7 @@ const account = {
 } as AccountInfo;
 const publicAppConfig: PublicAppConfig = {
   apiBaseUrl: '/',
+  authenticationMode: AuthenticationMode.MicrosoftEntra,
   authenticationUrl: '/local-auth/token',
   launchMode: LaunchMode.Certification,
   entraAuthority: 'https://login.microsoftonline.com/organizations',

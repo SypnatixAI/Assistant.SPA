@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
 import { AuthenticationApiService } from './authentication-api.service';
 
@@ -29,6 +29,7 @@ describe('AuthenticationApiService', () => {
           provide: PUBLIC_APP_CONFIG,
           useValue: {
             apiBaseUrl: 'https://api.example.com/',
+            authenticationMode: AuthenticationMode.MicrosoftEntra,
             authenticationUrl: '/local-auth/token',
             launchMode: LaunchMode.Certification,
             entraAuthority: 'https://login.microsoftonline.com/organizations',

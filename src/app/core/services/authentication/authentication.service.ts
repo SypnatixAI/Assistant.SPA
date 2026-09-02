@@ -12,7 +12,6 @@ import {
 
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
 import { ApiError } from '../../../domain/errors/api-error';
-import { LaunchMode } from '../../config/public-app-config';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider } from './authentication-provider';
@@ -53,7 +52,7 @@ export class AuthenticationService {
     private readonly authenticationProvider: AuthenticationProvider,
     private readonly technicalErrorService: TechnicalErrorService,
   ) {
-    this.isLocalAuthentication = authenticationProvider.launchMode === LaunchMode.Local;
+    this.isLocalAuthentication = authenticationProvider.isLocalAuthentication;
   }
 
   async initialize(): Promise<void> {

@@ -7,13 +7,13 @@ import {
 } from '@azure/msal-browser';
 import { catchError, defaultIfEmpty, map, Observable, of, switchMap, throwError } from 'rxjs';
 
-import { LaunchMode, PUBLIC_APP_CONFIG, PublicAppConfig } from '../../config/public-app-config';
+import { PUBLIC_APP_CONFIG, PublicAppConfig } from '../../config/public-app-config';
 import { AuthenticationNavigationService } from '../navigation/authentication-navigation.service';
 import { AuthenticationProvider } from './authentication-provider';
 
 @Injectable({ providedIn: 'root' })
 export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvider {
-  readonly launchMode = LaunchMode.Certification;
+  readonly isLocalAuthentication = false;
 
   constructor(
     private readonly msalService: MsalService,

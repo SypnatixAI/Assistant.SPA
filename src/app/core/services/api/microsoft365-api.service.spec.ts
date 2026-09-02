@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
 import { Microsoft365ApiService } from './microsoft365-api.service';
 
 describe('Microsoft365ApiService', () => {
@@ -20,8 +20,9 @@ describe('Microsoft365ApiService', () => {
           provide: PUBLIC_APP_CONFIG,
           useValue: {
             apiBaseUrl: 'https://api.example.com/',
+            authenticationMode: AuthenticationMode.LocalJwt,
             authenticationUrl: '/local-auth/token',
-            launchMode: LaunchMode.Local,
+            launchMode: LaunchMode.Dev,
             entraAuthority: '',
             entraClientId: '',
             entraScope: '',

@@ -3,7 +3,7 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { TestBed } from '@angular/core/testing';
 import { firstValueFrom } from 'rxjs';
 
-import { LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
+import { AuthenticationMode, LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
 import { MockAuthenticationApiService } from './mock-authentication-api.service';
 
 describe('MockAuthenticationApiService', () => {
@@ -18,11 +18,12 @@ describe('MockAuthenticationApiService', () => {
           provide: PUBLIC_APP_CONFIG,
           useValue: {
             apiBaseUrl: '/',
+            authenticationMode: AuthenticationMode.LocalJwt,
             authenticationUrl: '/local-auth/token',
             entraAuthority: '',
             entraClientId: '',
             entraScope: '',
-            launchMode: LaunchMode.Local,
+            launchMode: LaunchMode.Dev,
           },
         },
       ],

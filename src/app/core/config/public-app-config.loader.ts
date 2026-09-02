@@ -1,4 +1,4 @@
-import { LaunchMode, PublicAppConfig } from './public-app-config';
+import { AuthenticationMode, LaunchMode, PublicAppConfig } from './public-app-config';
 import { PUBLIC_APP_CONFIG_PATH } from './public-app-config-path';
 
 export async function loadPublicAppConfig(
@@ -31,12 +31,16 @@ function isPublicAppConfig(value: unknown): value is PublicAppConfig {
     return false;
   }
 
-  if (config.launchMode === LaunchMode.Local) {
+  if (!Object.values(LaunchMode).includes(config.launchMode as LaunchMode)) {
+    return false;
+  }
+
+  if (config.authenticationMode === AuthenticationMode.LocalJwt) {
     return true;
   }
 
   return (
-    config.launchMode === LaunchMode.Certification &&
+    config.authenticationMode === AuthenticationMode.MicrosoftEntra &&
     isConfiguredValue(config.entraClientId) &&
     isConfiguredValue(config.entraAuthority) &&
     isConfiguredValue(config.entraScope)
