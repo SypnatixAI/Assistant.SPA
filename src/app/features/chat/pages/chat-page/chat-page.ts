@@ -27,14 +27,27 @@ import { ChatMessageList } from '../../components/chat-message-list/chat-message
 import { ChatWelcome } from '../../components/chat-welcome/chat-welcome';
 import { ConversationSidebar } from '../../components/conversation-sidebar/conversation-sidebar';
 import { ConversationListState } from '../../../conversations/state/conversation-list.state';
+import { ModelSelector } from '../../../models/components/model-selector/model-selector';
+import { ModelCatalogState } from '../../../models/state/model-catalog.state';
+import { UsageIndicator } from '../../../usage/components/usage-indicator/usage-indicator';
+import { TokenUsageState } from '../../../usage/state/token-usage.state';
 import { toChatMessage } from '../../models/chat-view-mappers';
 import { ChatMessage } from '../../models/chat-view-models';
 
 type ConversationHistoryStatus = 'error' | 'loading' | 'ready';
 
+const QUOTA_EXHAUSTED_ERROR_CODE = 'organization_token_quota_exhausted';
+
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
-  imports: [ChatComposer, ChatMessageList, ChatWelcome, ConversationSidebar],
+  imports: [
+    ChatComposer,
+    ChatMessageList,
+    ChatWelcome,
+    ConversationSidebar,
+    ModelSelector,
+    UsageIndicator,
+  ],
   selector: 'app-chat-page',
   styleUrl: './chat-page.css',
   templateUrl: './chat-page.html',
@@ -49,7 +62,21 @@ export class ChatPage implements OnDestroy {
   protected readonly messages = signal<readonly ChatMessage[]>([]);
   protected readonly selectedConversationId = signal<string | null>(null);
   protected readonly historyStatus = signal<ConversationHistoryStatus>('ready');
-  protected readonly canSubmitMessage = computed(() => !this.isProcessing());
+  /**
+   * Le catalogue et le quota sont facultatifs : leurs endpoints n'existent pas
+   * dans tous les environnements. Seul un quota explicitement épuisé bloque
+   * l'envoi; une absence de données laisse le backend appliquer ses valeurs par
+   * défaut.
+   */
+  protected readonly canSubmitMessage = computed(
+    () => !this.isProcessing() && !this.tokenUsageState.isExhausted(),
+  );
+  protected readonly hasModelCatalog = computed(
+    () => this.modelCatalogState.models().length > 0,
+  );
+  protected readonly hasTokenUsage = computed(
+    () => this.tokenUsageState.usage() !== null || this.tokenUsageState.isExhausted(),
+  );
   protected readonly conversationTitle = computed(() => {
     const selectedConversationId = this.selectedConversationId();
     return (
@@ -75,10 +102,14 @@ export class ChatPage implements OnDestroy {
     private readonly conversationsApiService: ConversationsApiService,
     private readonly messagesApiService: MessagesApiService,
     protected readonly conversationListState: ConversationListState,
+    protected readonly modelCatalogState: ModelCatalogState,
+    protected readonly tokenUsageState: TokenUsageState,
     private readonly injector: Injector,
   ) {
     this.session = authenticationService.session;
     this.conversationListState.load();
+    this.modelCatalogState.load();
+    this.tokenUsageState.load();
   }
 
   logout(): void {
@@ -126,6 +157,7 @@ export class ChatPage implements OnDestroy {
     this.isProcessing.set(false);
     this.processingMessage.set(null);
     this.sendError.set(null);
+    this.modelCatalogState.resetToDefault();
     this.closeNavigation(false);
     queueMicrotask(() => this.composer()?.focus());
   }
@@ -204,6 +236,9 @@ export class ChatPage implements OnDestroy {
       .streamMessage({
         conversationId: this.selectedConversationId(),
         message: content,
+        ...(this.modelCatalogState.selectedModelId()
+          ? { model: this.modelCatalogState.selectedModelId() as string }
+          : {}),
       })
       .subscribe({
         next: (event) => this.handleStreamEvent(event, streamingAssistantMessageId),
@@ -308,9 +343,16 @@ export class ChatPage implements OnDestroy {
     this.activeMessageStream = null;
     this.isProcessing.set(false);
     this.processingMessage.set(null);
+    if (this.hasTokenUsage()) {
+      this.tokenUsageState.load();
+    }
   }
 
   private failMessageStream(streamingAssistantMessageId: string, errorCode?: string): void {
+    if (errorCode === QUOTA_EXHAUSTED_ERROR_CODE) {
+      this.tokenUsageState.load();
+    }
+
     this.messages.update((messages) =>
       messages.filter((message) => message.id !== streamingAssistantMessageId),
     );
@@ -322,6 +364,8 @@ export class ChatPage implements OnDestroy {
 
   private getSendErrorMessage(errorCode?: string): string {
     switch (errorCode) {
+      case QUOTA_EXHAUSTED_ERROR_CODE:
+        return 'Le quota de jetons est épuisé.';
       case 'ai_provider_timeout':
         return 'L’assistant met trop de temps à répondre. Réessayez dans quelques instants.';
       case 'ai_provider_limit':
