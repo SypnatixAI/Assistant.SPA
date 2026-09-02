@@ -65,11 +65,18 @@ export class ApplicationNavigationService {
   }
 
   navigateToTechnicalError(): void {
-    if (this.router.url === APPLICATION_ROUTES.technicalError) {
+    if (
+      this.router.url === APPLICATION_ROUTES.technicalError ||
+      this.router.url.startsWith(`${APPLICATION_ROUTES.technicalError}?`)
+    ) {
       return;
     }
 
-    void this.router.navigateByUrl(APPLICATION_ROUTES.technicalError);
+    void this.router.navigateByUrl(
+      this.router.createUrlTree([APPLICATION_ROUTES.technicalError], {
+        queryParams: { returnUrl: this.router.url },
+      }),
+    );
   }
 
   navigateToAccessDenied(): void {
@@ -97,7 +104,18 @@ export class ApplicationNavigationService {
     this.document.location.assign(url.href);
   }
 
-  reloadApplication(): void {
+  reloadApplication(returnUrl: string | null = null): void {
+    if (returnUrl !== null && this.isApplicationUrl(returnUrl)) {
+      this.document.location.assign(returnUrl);
+      return;
+    }
+
     this.document.location.reload();
+  }
+
+  private isApplicationUrl(url: string): boolean {
+    const resolvedUrl = new URL(url, this.document.location.origin);
+
+    return resolvedUrl.origin === this.document.location.origin;
   }
 }

@@ -244,6 +244,17 @@ describe('ChatPage', () => {
     expect(loadConversations).not.toHaveBeenCalled();
   });
 
+  it('Given_ACompletedAnswer_When_submitMessageIsCalled_Then_ConversationsAreReloaded', () => {
+    // Given
+    const component = fixture.componentInstance;
+
+    // When
+    component.submitMessage('Bonjour');
+
+    // Then
+    expect(loadConversations).toHaveBeenCalledTimes(2);
+  });
+
   it('Given_LoadedConversations_When_ChatPageIsDisplayed_Then_TitlesAndPreviewsAreVisible', () => {
     // Given
     conversations.set([

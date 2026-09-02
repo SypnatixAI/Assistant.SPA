@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
 import { ApplicationNavigationService } from '../../../core/services/navigation/application-navigation.service';
 import { TechnicalErrorPage } from './technical-error-page';
@@ -15,6 +16,12 @@ describe('TechnicalErrorPage', () => {
         {
           provide: ApplicationNavigationService,
           useValue: { reloadApplication },
+        },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: { queryParamMap: convertToParamMap({ returnUrl: '/chat' }) },
+          },
         },
       ],
     }).compileComponents();
@@ -48,6 +55,6 @@ describe('TechnicalErrorPage', () => {
     button.click();
 
     // Then
-    expect(reloadApplication).toHaveBeenCalled();
+    expect(reloadApplication).toHaveBeenCalledWith('/chat');
   });
 });
