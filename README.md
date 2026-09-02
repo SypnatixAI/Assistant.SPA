@@ -81,6 +81,11 @@ bash scripts/start-local-wiremock.sh
 npm start
 ```
 
+Le chat affiche le sélecteur de modèle et l’indicateur de quota uniquement
+lorsque `/api/models` et `/api/usage` répondent. Là où ces endpoints n’existent
+pas encore, les deux contrôles restent masqués et l’envoi continue de
+fonctionner : le backend applique alors ses valeurs par défaut.
+
 `npm start` charge `public/assets/config/config.json`, dont le `launchMode` est
 `Local` par défaut. Le proxy Angular transmet `/local-auth/token` à WireMock et
 `/api` au backend local. Tant que les endpoints de catalogue et de quota ne
