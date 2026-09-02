@@ -12,13 +12,15 @@ describe('ApplicationNavigationService', () => {
   let assign: jasmine.Spy;
   let reload: jasmine.Spy;
   let navigateByUrl: jasmine.Spy;
-  let router: { url: string; navigateByUrl: jasmine.Spy };
+  let createUrlTree: jasmine.Spy;
+  let router: { url: string; createUrlTree: jasmine.Spy; navigateByUrl: jasmine.Spy };
 
   beforeEach(() => {
     assign = jasmine.createSpy('assign');
     reload = jasmine.createSpy('reload');
+    createUrlTree = jasmine.createSpy('createUrlTree').and.returnValue(APPLICATION_ROUTES.technicalError);
     navigateByUrl = jasmine.createSpy('navigateByUrl');
-    router = { url: '/app/chat', navigateByUrl };
+    router = { url: '/app/chat', createUrlTree, navigateByUrl };
 
     TestBed.configureTestingModule({
       providers: [

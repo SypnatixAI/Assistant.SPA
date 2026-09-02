@@ -1,11 +1,9 @@
 import {
-  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   HostListener,
-  Injector,
   OnDestroy,
   Signal,
   signal,
@@ -104,7 +102,6 @@ export class ChatPage implements OnDestroy {
     protected readonly conversationListState: ConversationListState,
     protected readonly modelCatalogState: ModelCatalogState,
     protected readonly tokenUsageState: TokenUsageState,
-    private readonly injector: Injector,
   ) {
     this.session = authenticationService.session;
     this.conversationListState.load();
@@ -128,9 +125,7 @@ export class ChatPage implements OnDestroy {
    */
   openNavigation(): void {
     this.isNavigationOpen.set(true);
-    afterNextRender(() => this.sidebars().at(-1)?.focusCloseButton(), {
-      injector: this.injector,
-    });
+    setTimeout(() => this.sidebars().at(-1)?.focusCloseButton());
   }
 
   closeNavigation(restoreFocus = true): void {
@@ -138,7 +133,7 @@ export class ChatPage implements OnDestroy {
     if (restoreFocus) {
       const navigationButton = this.navigationButton()?.nativeElement;
       navigationButton?.closest('.conversation-area')?.removeAttribute('inert');
-      navigationButton?.focus();
+      setTimeout(() => navigationButton?.focus());
     }
   }
 
