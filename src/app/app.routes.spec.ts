@@ -55,7 +55,7 @@ describe('Application routes', () => {
     const harness = await RouterTestingHarness.create();
 
     // When
-    await harness.navigateByUrl('/login', LoginPage);
+    await harness.navigateByUrl('/auth/sign-in', LoginPage);
 
     // Then
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
@@ -85,7 +85,7 @@ describe('Application routes', () => {
     await harness.navigateByUrl('/app/chat', LoginPage);
 
     // Then
-    expect(location.path()).toBe('/login');
+    expect(location.path()).toBe('/auth/sign-in');
   });
 
   it('Given_AuthenticatedAdmin_When_NavigateByUrlIsCalled_Then_ConsentSuccessReturnsToOnboarding', async () => {
@@ -157,7 +157,7 @@ describe('Application routes', () => {
     await harness.navigateByUrl('/', LoginPage);
 
     // Then
-    expect(location.path()).toBe('/login');
+    expect(location.path()).toBe('/auth/sign-in');
   });
 
   it('Given_ALegacyChatAddress_When_NavigateByUrlIsCalled_Then_ItRedirectsToTheApplicationSpace', async () => {
@@ -227,5 +227,58 @@ describe('Application routes', () => {
 
     // Then
     expect(location.path()).toBe('/auth/forbidden');
+  });
+
+  it('Given_TheEntraRedirectAddress_When_NavigateByUrlIsCalled_Then_TheSignInPageIsStillServed', async () => {
+    // Given
+    const harness = await RouterTestingHarness.create();
+
+    // When
+    await harness.navigateByUrl('/login', LoginPage);
+
+    // Then
+    expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
+      'Connexion en cours',
+    );
+  });
+
+  it('Given_ASuccessfulConsent_When_TheUnifiedCallbackIsOpened_Then_TheOutcomeIsRead', async () => {
+    // Given
+    TestBed.overrideProvider(AuthenticationService, {
+      useValue: {
+        isAuthenticated: () => true,
+        status: () => AuthenticationStatus.Authenticated,
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+
+    // When
+    await harness.navigateByUrl(
+      '/auth/microsoft/callback?status=success',
+      Microsoft365AdministrationPage,
+    );
+
+    // Then
+    expect(harness.routeNativeElement?.textContent).toContain('Autorisation confirmée');
+  });
+
+  it('Given_ALegacyConsentAddress_When_ItIsOpened_Then_TheOutcomeIsStillRead', async () => {
+    // Given
+    TestBed.overrideProvider(AuthenticationService, {
+      useValue: {
+        isAuthenticated: () => true,
+        status: () => AuthenticationStatus.Authenticated,
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+
+    // When
+    await harness.navigateByUrl(
+      '/microsoft365/consent/success',
+      Microsoft365AdministrationPage,
+    );
+
+    // Then
+    expect(harness.routeNativeElement?.textContent).toContain('Autorisation confirmée');
   });
 });

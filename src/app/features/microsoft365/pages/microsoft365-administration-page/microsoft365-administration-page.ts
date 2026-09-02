@@ -67,7 +67,8 @@ export class Microsoft365AdministrationPage {
     private readonly microsoft365ApiService: Microsoft365ApiService,
     private readonly navigationService: ApplicationNavigationService,
   ) {
-    const outcome = route.snapshot.data['consentOutcome'];
+    const outcome =
+      route.snapshot.data['consentOutcome'] ?? route.snapshot.queryParamMap.get('status');
     this.consentOutcome =
       outcome === 'success' || outcome === 'error' ? outcome : null;
     this.isOnboardingMode = route.snapshot.data['onboardingMode'] === true;
