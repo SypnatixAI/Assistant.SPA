@@ -258,6 +258,11 @@ export class ChatPage implements OnDestroy {
     this.scrollConversationToBottom();
   }
 
+  /**
+   * Le backend crée la conversation à la première réponse. La liste est alors
+   * rechargée afin que la nouvelle conversation et son titre apparaissent dans
+   * la barre latérale sans attendre un rechargement de la page.
+   */
   private applyMessageResponse(
     response: SendMessageResponse,
     streamingAssistantMessageId: string,
@@ -270,6 +275,7 @@ export class ChatPage implements OnDestroy {
       warnings: response.warnings,
     };
 
+    const previousConversationId = this.selectedConversationId();
     this.selectedConversationId.set(response.conversationId);
     const hasStreamingMessage = this.messages().some(
       (message) => message.id === streamingAssistantMessageId,
@@ -282,6 +288,10 @@ export class ChatPage implements OnDestroy {
         : [...messages, assistantMessage],
     );
     this.scrollConversationToBottom();
+
+    if (previousConversationId !== response.conversationId) {
+      this.conversationListState.load();
+    }
   }
 
   private completeMessageStream(): void {
