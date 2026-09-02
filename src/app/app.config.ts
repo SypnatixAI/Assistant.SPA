@@ -31,6 +31,7 @@ import {
 import { routes } from './app.routes';
 import { GlobalErrorHandler } from './core/errors/global-error.handler';
 import { apiErrorInterceptor } from './core/interceptors/api-error.interceptor';
+import { unauthorizedInterceptor } from './core/interceptors/unauthorized.interceptor';
 import { LocalJwtInterceptor } from './core/interceptors/local-jwt.interceptor';
 import { TechnicalErrorInterceptor } from './core/interceptors/technical-error.interceptor';
 import { AuthenticationService } from './core/services/authentication/authentication.service';
@@ -49,7 +50,7 @@ export function createAppConfig(publicAppConfig: PublicAppConfig): ApplicationCo
     providers: [
       provideBrowserGlobalErrorListeners(),
       provideHttpClient(
-        withInterceptors([apiErrorInterceptor]),
+        withInterceptors([unauthorizedInterceptor, apiErrorInterceptor]),
         withInterceptorsFromDi(),
       ),
       provideRouter(routes),

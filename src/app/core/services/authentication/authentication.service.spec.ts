@@ -1,10 +1,11 @@
 import { TestBed } from '@angular/core/testing';
-import { of, throwError } from 'rxjs';
+import { firstValueFrom, of, Subject, throwError } from 'rxjs';
 
 import { AuthenticatedSession } from '../../../domain/auth/authenticated-session';
 import { ApiError } from '../../../domain/errors/api-error';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
+import { ApplicationNavigationService } from '../navigation/application-navigation.service';
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider } from './authentication-provider';
 import { AuthenticationService } from './authentication.service';
 import { AuthenticationStatus } from './authentication-status';
@@ -28,6 +29,10 @@ describe('AuthenticationService', () => {
     isLocalAuthentication: boolean;
   };
   let technicalErrorService: { report: jasmine.Spy };
+  let applicationNavigationService: {
+    getCurrentAbsoluteUrl: jasmine.Spy;
+    navigateToAccessDenied: jasmine.Spy;
+  };
 
   beforeEach(() => {
     authenticationApiService = {
@@ -41,6 +46,12 @@ describe('AuthenticationService', () => {
       isLocalAuthentication: true,
     };
     technicalErrorService = { report: jasmine.createSpy('report') };
+    applicationNavigationService = {
+      getCurrentAbsoluteUrl: jasmine
+        .createSpy('getCurrentAbsoluteUrl')
+        .and.returnValue('https://onpremia.test/chat'),
+      navigateToAccessDenied: jasmine.createSpy('navigateToAccessDenied'),
+    };
 
     TestBed.configureTestingModule({
       providers: [
@@ -51,6 +62,10 @@ describe('AuthenticationService', () => {
           useValue: authenticationProvider as AuthenticationProvider,
         },
         { provide: TechnicalErrorService, useValue: technicalErrorService },
+        {
+          provide: ApplicationNavigationService,
+          useValue: applicationNavigationService,
+        },
       ],
     });
   });
@@ -172,5 +187,81 @@ describe('AuthenticationService', () => {
     // Then
     expect(technicalErrorService.report).toHaveBeenCalled();
     expect(service.isAuthenticated()).toBeFalse();
+  });
+
+  it('Given_AnExpiredToken_When_handleUnauthorizedIsCalled_Then_SessionIsRebuiltAndTheCallCanBeRetried', async () => {
+    // Given
+    authenticationProvider.recover.and.returnValue(of(true));
+    authenticationApiService.authenticateUser.and.returnValue(of(session));
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    const isRecovered = await firstValueFrom(service.handleUnauthorized());
+
+    // Then
+    expect(isRecovered).toBeTrue();
+    expect(service.status()).toBe(AuthenticationStatus.Authenticated);
+  });
+
+  it('Given_AnExpiredToken_When_handleUnauthorizedIsCalled_Then_TheCurrentPageIsKeptAsReturnPage', async () => {
+    // Given
+    authenticationProvider.recover.and.returnValue(of(true));
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    await firstValueFrom(service.handleUnauthorized());
+
+    // Then
+    expect(authenticationProvider.recover).toHaveBeenCalledWith('https://onpremia.test/chat');
+  });
+
+  it('Given_AnInteractiveLoginIsRequired_When_handleUnauthorizedIsCalled_Then_TheSessionIsCleared', async () => {
+    // Given
+    authenticationProvider.recover.and.returnValue(of(false));
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    const isRecovered = await firstValueFrom(service.handleUnauthorized());
+
+    // Then
+    expect(isRecovered).toBeFalse();
+    expect(service.status()).toBe(AuthenticationStatus.Unauthenticated);
+    expect(service.session()).toBeNull();
+  });
+
+  it('Given_SeveralSimultaneousUnauthorizedCalls_When_handleUnauthorizedIsCalled_Then_OnlyOneRecoveryIsStarted', async () => {
+    // Given
+    const recovery = new Subject<boolean>();
+    authenticationProvider.recover.and.returnValue(recovery);
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    const first = firstValueFrom(service.handleUnauthorized());
+    const second = firstValueFrom(service.handleUnauthorized());
+    recovery.next(true);
+    recovery.complete();
+
+    // Then
+    expect(await first).toBeTrue();
+    expect(await second).toBeTrue();
+    expect(authenticationProvider.recover).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given_AFreshTokenStillRefused_When_initializeIsCalled_Then_AuthenticationStopsInAControlledError', async () => {
+    // Given
+    authenticationProvider.initialize.and.returnValue(of(true));
+    authenticationProvider.recover.and.returnValue(of(true));
+    authenticationApiService.authenticateUser.and.returnValue(
+      throwError(() => new ApiError(401, 'http_401', 'Unauthorized', null)),
+    );
+    const service = TestBed.inject(AuthenticationService);
+
+    // When
+    await service.initialize();
+
+    // Then
+    expect(service.status()).toBe(AuthenticationStatus.Error);
+    expect(service.errorMessage()).toContain('n’a pas pu être rétablie');
+    expect(authenticationProvider.recover).toHaveBeenCalledTimes(1);
   });
 });

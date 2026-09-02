@@ -32,20 +32,20 @@ export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvi
     );
   }
 
-  login(): Observable<boolean> {
-    return this.authenticationNavigationService.login().pipe(
+  login(redirectStartPage?: string): Observable<boolean> {
+    return this.authenticationNavigationService.login(redirectStartPage).pipe(
       map(() => false),
       defaultIfEmpty(false),
     );
   }
 
-  recover(): Observable<boolean> {
+  recover(redirectStartPage?: string): Observable<boolean> {
     const account = this.msalService.instance.getActiveAccount();
     if (account === null) {
-      return this.login();
+      return this.login(redirectStartPage);
     }
 
-    return this.acquireToken(account, true);
+    return this.acquireToken(account, true, redirectStartPage);
   }
 
   logout(): Observable<void> {
@@ -71,6 +71,7 @@ export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvi
   private acquireToken(
     account: AccountInfo,
     forceRefresh = false,
+    redirectStartPage?: string,
   ): Observable<boolean> {
     return this.msalService
       .acquireTokenSilent({
@@ -85,10 +86,12 @@ export class MicrosoftEntraAuthenticationProvider implements AuthenticationProvi
             return throwError(() => error);
           }
 
-          return this.authenticationNavigationService.requestTokenInteractively(account).pipe(
-            map(() => false),
-            defaultIfEmpty(false),
-          );
+          return this.authenticationNavigationService
+            .requestTokenInteractively(account, redirectStartPage)
+            .pipe(
+              map(() => false),
+              defaultIfEmpty(false),
+            );
         }),
       );
   }

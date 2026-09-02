@@ -18,18 +18,23 @@ export class AuthenticationNavigationService {
     private readonly applicationNavigationService: ApplicationNavigationService,
   ) {}
 
-  login(): Observable<void> {
+  login(redirectStartPage?: string): Observable<void> {
     return this.msalService.loginRedirect({
       redirectStartPage:
+        redirectStartPage ??
         this.applicationNavigationService.getOnboardingAbsoluteUrl(),
       scopes: [this.publicAppConfig.entraScope],
     });
   }
 
-  requestTokenInteractively(account: AccountInfo): Observable<void> {
+  requestTokenInteractively(
+    account: AccountInfo,
+    redirectStartPage?: string,
+  ): Observable<void> {
     return this.msalService.acquireTokenRedirect({
       account,
       redirectStartPage:
+        redirectStartPage ??
         this.applicationNavigationService.getOnboardingAbsoluteUrl(),
       scopes: [this.publicAppConfig.entraScope],
     });

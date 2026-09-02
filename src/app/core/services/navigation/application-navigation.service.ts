@@ -46,6 +46,10 @@ export class ApplicationNavigationService {
     return this.getAbsoluteUrl(APPLICATION_ROUTES.login);
   }
 
+  getCurrentAbsoluteUrl(): string {
+    return this.getAbsoluteUrl(this.router.url);
+  }
+
   getAbsoluteUrl(path: string): string {
     return new URL(path, this.document.location.origin).toString();
   }
@@ -56,6 +60,14 @@ export class ApplicationNavigationService {
     }
 
     void this.router.navigateByUrl(APPLICATION_ROUTES.technicalError);
+  }
+
+  navigateToAccessDenied(): void {
+    if (this.router.url === APPLICATION_ROUTES.accessDenied) {
+      return;
+    }
+
+    void this.router.navigateByUrl(APPLICATION_ROUTES.accessDenied);
   }
 
   navigateToChat(): void {

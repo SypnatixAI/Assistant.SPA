@@ -85,7 +85,7 @@ describe('MicrosoftEntraAuthenticationProvider', () => {
     expect(authenticated).toBeFalse();
     expect(
       dependencies.authenticationNavigationService.requestTokenInteractively,
-    ).toHaveBeenCalledWith(account);
+    ).toHaveBeenCalledWith(account, undefined);
   });
 });
 
