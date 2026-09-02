@@ -1,4 +1,5 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 
 import { ApplicationNavigationService } from '../../../core/services/navigation/application-navigation.service';
 
@@ -10,10 +11,13 @@ import { ApplicationNavigationService } from '../../../core/services/navigation/
 })
 export class TechnicalErrorPage {
   constructor(
+    private readonly activatedRoute: ActivatedRoute,
     private readonly applicationNavigationService: ApplicationNavigationService,
   ) {}
 
   reloadApplication(): void {
-    this.applicationNavigationService.reloadApplication();
+    this.applicationNavigationService.reloadApplication(
+      this.activatedRoute.snapshot.queryParamMap.get('returnUrl'),
+    );
   }
 }

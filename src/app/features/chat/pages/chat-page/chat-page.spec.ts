@@ -244,6 +244,17 @@ describe('ChatPage', () => {
     expect(loadConversations).not.toHaveBeenCalled();
   });
 
+  it('Given_ACompletedAnswer_When_submitMessageIsCalled_Then_ConversationsAreReloaded', () => {
+    // Given
+    const component = fixture.componentInstance;
+
+    // When
+    component.submitMessage('Bonjour');
+
+    // Then
+    expect(loadConversations).toHaveBeenCalledTimes(2);
+  });
+
   it('Given_LoadedConversations_When_ChatPageIsDisplayed_Then_TitlesAndPreviewsAreVisible', () => {
     // Given
     conversations.set([
@@ -370,10 +381,13 @@ describe('ChatPage', () => {
     // Given
     const navigationButton: HTMLButtonElement =
       fixture.nativeElement.querySelector('.navigation-trigger');
+    navigationButton.style.display = 'grid';
 
     // When
     navigationButton.click();
-    await fixture.whenStable();
+    fixture.detectChanges();
+    makeMobileNavigationVisible();
+    await waitForDeferredFocus();
     fixture.detectChanges();
 
     // Then
@@ -386,14 +400,17 @@ describe('ChatPage', () => {
     // Given
     const navigationButton: HTMLButtonElement =
       fixture.nativeElement.querySelector('.navigation-trigger');
+    navigationButton.style.display = 'grid';
     navigationButton.click();
-    await fixture.whenStable();
+    fixture.detectChanges();
+    makeMobileNavigationVisible();
+    await waitForDeferredFocus();
     fixture.detectChanges();
 
     // When
     document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
     fixture.detectChanges();
-    await fixture.whenStable();
+    await waitForDeferredFocus();
 
     // Then
     expect(fixture.nativeElement.querySelector('.mobile-navigation')).toBeNull();
@@ -447,11 +464,24 @@ describe('ChatPage', () => {
     const navigationButton: HTMLButtonElement =
       fixture.nativeElement.querySelector('.navigation-trigger');
     navigationButton.click();
+    fixture.detectChanges();
+    makeMobileNavigationVisible();
     await fixture.whenStable();
     fixture.detectChanges();
     const panel: HTMLElement = fixture.nativeElement.querySelector('.mobile-navigation__panel');
 
     return panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+  }
+
+  function makeMobileNavigationVisible(): void {
+    const navigation: HTMLElement = fixture.nativeElement.querySelector('.mobile-navigation');
+    const closeButton: HTMLButtonElement = navigation.querySelector('.mobile-close')!;
+    navigation.style.display = 'block';
+    closeButton.style.display = 'grid';
+  }
+
+  async function waitForDeferredFocus(): Promise<void> {
+    await new Promise<void>((resolve) => setTimeout(resolve));
   }
 
 
