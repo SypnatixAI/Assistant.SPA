@@ -39,7 +39,7 @@ export function createMsalGuardConfig(publicAppConfig: PublicAppConfig): MsalGua
       scopes: [publicAppConfig.entraScope],
     },
     interactionType: InteractionType.Redirect,
-    loginFailedRoute: APPLICATION_ROUTES.login,
+    loginFailedRoute: APPLICATION_ROUTES.signIn,
   };
 }
 

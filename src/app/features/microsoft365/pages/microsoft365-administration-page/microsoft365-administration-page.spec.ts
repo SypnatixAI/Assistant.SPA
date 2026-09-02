@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { ActivatedRoute, provideRouter } from '@angular/router';
+import { ActivatedRoute, convertToParamMap, provideRouter } from '@angular/router';
 import { of, throwError } from 'rxjs';
 
 import { Microsoft365Site } from '../../../../domain/microsoft365/microsoft365';
@@ -173,7 +173,12 @@ describe('Microsoft365AdministrationPage', () => {
         provideRouter([]),
         {
           provide: ActivatedRoute,
-          useValue: { snapshot: { data: { onboardingMode: true } } },
+          useValue: {
+            snapshot: {
+              data: { onboardingMode: true },
+              queryParamMap: convertToParamMap({}),
+            },
+          },
         },
         { provide: Microsoft365ApiService, useValue: apiService },
         { provide: ApplicationNavigationService, useValue: navigationService },
