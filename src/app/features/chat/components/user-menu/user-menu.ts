@@ -11,6 +11,7 @@ import {
 import { RouterLink } from '@angular/router';
 
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
+import { APPLICATION_ROUTES } from '../../../../core/services/navigation/application-navigation.service';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -23,6 +24,7 @@ export class UserMenu {
   readonly logoutRequested = output<void>();
   readonly session = input.required<AuthenticatedSession>();
 
+  protected readonly administrationRoute = APPLICATION_ROUTES.microsoft365Administration;
   protected readonly isOpen = signal(false);
   private readonly trigger = viewChild<ElementRef<HTMLButtonElement>>('trigger');
 

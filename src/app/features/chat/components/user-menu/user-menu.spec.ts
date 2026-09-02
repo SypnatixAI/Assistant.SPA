@@ -33,7 +33,7 @@ describe('UserMenu', () => {
 
     // Then
     const link = menu.querySelector<HTMLAnchorElement>(
-      'a[href="/administration/microsoft365"]',
+      'a[href="/app/settings/microsoft365"]',
     );
     expect(link?.textContent).toContain('Microsoft 365');
   });

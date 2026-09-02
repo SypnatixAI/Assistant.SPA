@@ -8,7 +8,10 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { catchError, concatMap, forkJoin, from, map, of, toArray } from 'rxjs';
 
 import { Microsoft365ApiService } from '../../../../core/services/api/microsoft365-api.service';
-import { ApplicationNavigationService } from '../../../../core/services/navigation/application-navigation.service';
+import {
+  APPLICATION_ROUTES,
+  ApplicationNavigationService,
+} from '../../../../core/services/navigation/application-navigation.service';
 import { ApiError } from '../../../../domain/errors/api-error';
 import {
   Microsoft365Drive,
@@ -28,6 +31,7 @@ type ConsentOutcome = 'success' | 'error' | null;
 })
 export class Microsoft365AdministrationPage {
   protected readonly consentOutcome: ConsentOutcome;
+  protected readonly homeRoute: string;
   protected readonly currentStep = computed(() => {
     const status = this.onboardingStatus();
     if (!status?.isConsentComplete) {
@@ -67,6 +71,9 @@ export class Microsoft365AdministrationPage {
     this.consentOutcome =
       outcome === 'success' || outcome === 'error' ? outcome : null;
     this.isOnboardingMode = route.snapshot.data['onboardingMode'] === true;
+    this.homeRoute = this.isOnboardingMode
+      ? APPLICATION_ROUTES.onboarding
+      : APPLICATION_ROUTES.chat;
     this.loadStatus();
   }
 
