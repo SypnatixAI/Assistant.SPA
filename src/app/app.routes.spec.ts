@@ -82,7 +82,7 @@ describe('Application routes', () => {
     const location = TestBed.inject(Location);
 
     // When
-    await harness.navigateByUrl('/chat', LoginPage);
+    await harness.navigateByUrl('/app/chat', LoginPage);
 
     // Then
     expect(location.path()).toBe('/login');
@@ -125,7 +125,7 @@ describe('Application routes', () => {
 
     // When
     await harness.navigateByUrl(
-      '/administration/microsoft365',
+      '/app/settings/microsoft365',
       Microsoft365AdministrationPage,
     );
 
@@ -146,5 +146,86 @@ describe('Application routes', () => {
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
       'Page introuvable',
     );
+  });
+
+  it('Given_TheRootAddress_When_NavigateByUrlIsCalled_Then_TheGuardsDecideWhereToGo', async () => {
+    // Given
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl('/', LoginPage);
+
+    // Then
+    expect(location.path()).toBe('/login');
+  });
+
+  it('Given_ALegacyChatAddress_When_NavigateByUrlIsCalled_Then_ItRedirectsToTheApplicationSpace', async () => {
+    // Given
+    TestBed.overrideProvider(AuthenticationService, {
+      useValue: {
+        isAuthenticated: () => true,
+        status: () => AuthenticationStatus.Authenticated,
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl('/chat');
+
+    // Then
+    expect(location.path()).toBe('/setup');
+  });
+
+  it('Given_ALegacyOnboardingAddress_When_NavigateByUrlIsCalled_Then_SetupIsDisplayed', async () => {
+    // Given
+    TestBed.overrideProvider(AuthenticationService, {
+      useValue: {
+        isAuthenticated: () => true,
+        status: () => AuthenticationStatus.Authenticated,
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl('/onboarding', Microsoft365AdministrationPage);
+
+    // Then
+    expect(location.path()).toBe('/setup');
+  });
+
+  it('Given_ALegacyAdministrationAddress_When_NavigateByUrlIsCalled_Then_SettingsAreDisplayed', async () => {
+    // Given
+    TestBed.overrideProvider(AuthenticationService, {
+      useValue: {
+        isAuthenticated: () => true,
+        status: () => AuthenticationStatus.Authenticated,
+      },
+    });
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl(
+      '/administration/microsoft365',
+      Microsoft365AdministrationPage,
+    );
+
+    // Then
+    expect(location.path()).toBe('/app/settings/microsoft365');
+  });
+
+  it('Given_ALegacyAccessDeniedAddress_When_NavigateByUrlIsCalled_Then_ForbiddenPageIsDisplayed', async () => {
+    // Given
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl('/access-denied');
+
+    // Then
+    expect(location.path()).toBe('/auth/forbidden');
   });
 });

@@ -36,12 +36,30 @@ npm run verify     # vérification complète du ticket
 
 ## Routes
 
+Les adresses suivent une convention par espace : `/app` pour l’application,
+`/setup` pour la configuration initiale, `/auth` pour l’authentification.
+
+- `/` : point d’entrée; les gardes envoient vers la connexion, la configuration
+  ou l’espace applicatif selon l’état de la session;
 - `/login` : lance automatiquement la connexion professionnelle Microsoft;
-- `/chat` : espace de chat affiché uniquement après une session AssistantCore valide;
+- `/app/chat` : espace de chat affiché uniquement après une session
+  AssistantCore valide;
+- `/app/settings/microsoft365` : administration de la connexion Microsoft 365;
+- `/setup` : configuration initiale de l’espace de travail;
+- `/auth/forbidden` : compte connecté mais non autorisé;
 - `/technical-error` : arrêt sécurisé après une erreur inattendue;
 - toute adresse inconnue : page 404.
 
-La garde de `/chat` redirige vers `/login` lorsque la session n’est pas valide.
+La garde de `/app/chat` redirige vers `/login` lorsque la session n’est pas
+valide, et vers `/setup` tant que la configuration Microsoft 365 est incomplète.
+
+Les anciennes adresses restent valides et redirigent vers la nouvelle
+structure : `/chat`, `/onboarding`, `/administration/microsoft365` et
+`/access-denied`.
+
+Les retours de consentement Microsoft (`/microsoft365/consent/success` et
+`/microsoft365/consent/error`) restent inchangés : leur adresse est configurée
+côté backend et Entra.
 La page de connexion envoie immédiatement l’utilisateur vers Microsoft, sans
 étape ni bouton intermédiaire. Une annulation ou un consentement refusé reste
 affiché sans relancer automatiquement la redirection.

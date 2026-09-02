@@ -7,7 +7,10 @@ import {
 } from '@azure/msal-browser';
 
 import { PublicAppConfig } from '../../config/public-app-config';
-import { ApplicationNavigationService } from '../navigation/application-navigation.service';
+import {
+  APPLICATION_ROUTES,
+  ApplicationNavigationService,
+} from '../navigation/application-navigation.service';
 
 /**
  * MSAL (Microsoft Authentication Library) handles the Entra authorization code
@@ -36,7 +39,7 @@ export function createMsalGuardConfig(publicAppConfig: PublicAppConfig): MsalGua
       scopes: [publicAppConfig.entraScope],
     },
     interactionType: InteractionType.Redirect,
-    loginFailedRoute: '/login',
+    loginFailedRoute: APPLICATION_ROUTES.login,
   };
 }
 

@@ -3,11 +3,11 @@ import { Inject, Injectable } from '@angular/core';
 import { Router, UrlTree } from '@angular/router';
 
 export const APPLICATION_ROUTES = {
-  accessDenied: '/access-denied',
-  chat: '/chat',
+  accessDenied: '/auth/forbidden',
+  chat: '/app/chat',
   login: '/login',
-  microsoft365Administration: '/administration/microsoft365',
-  onboarding: '/onboarding',
+  microsoft365Administration: '/app/settings/microsoft365',
+  onboarding: '/setup',
   technicalError: '/technical-error',
 } as const;
 

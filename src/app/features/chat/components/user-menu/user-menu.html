@@ -23,7 +23,7 @@
       @if (isAdministrator()) {
         <a
           class="user-menu__item"
-          routerLink="/administration/microsoft365"
+          [routerLink]="administrationRoute"
           role="menuitem"
           (click)="closeMenu()"
         >
