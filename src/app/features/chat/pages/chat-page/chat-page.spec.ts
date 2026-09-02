@@ -178,6 +178,32 @@ describe('ChatPage', () => {
     expect(loadConversations).toHaveBeenCalledTimes(1);
   });
 
+  it('Given_ANewConversation_When_TheAnswerCompletes_Then_TheConversationListIsReloaded', () => {
+    // Given
+    loadConversations.calls.reset();
+
+    // When
+    fixture.componentInstance.submitMessage('Bonjour');
+    fixture.detectChanges();
+
+    // Then
+    expect(loadConversations).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given_AnAlreadySelectedConversation_When_TheAnswerCompletes_Then_TheConversationListIsNotReloaded', () => {
+    // Given
+    fixture.componentInstance.selectConversation('conversation-id');
+    fixture.detectChanges();
+    loadConversations.calls.reset();
+
+    // When
+    fixture.componentInstance.submitMessage('Bonjour');
+    fixture.detectChanges();
+
+    // Then
+    expect(loadConversations).not.toHaveBeenCalled();
+  });
+
   it('Given_LoadedConversations_When_ChatPageIsDisplayed_Then_TitlesAndPreviewsAreVisible', () => {
     // Given
     conversations.set([
