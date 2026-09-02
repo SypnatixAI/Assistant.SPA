@@ -2,9 +2,12 @@ import { computed, Inject, Injectable, signal } from '@angular/core';
 import {
   catchError,
   defaultIfEmpty,
+  finalize,
   lastValueFrom,
+  map,
   Observable,
   of,
+  shareReplay,
   switchMap,
   tap,
   throwError,
@@ -14,6 +17,7 @@ import { AuthenticatedSession } from '../../../domain/auth/authenticated-session
 import { ApiError } from '../../../domain/errors/api-error';
 import { AuthenticationApiService } from '../api/authentication-api.service';
 import { TechnicalErrorService } from '../errors/technical-error.service';
+import { ApplicationNavigationService } from '../navigation/application-navigation.service';
 import { AUTHENTICATION_PROVIDER, AuthenticationProvider } from './authentication-provider';
 import {
   getAuthenticationErrorMessage,
@@ -27,6 +31,9 @@ interface AuthenticationState {
   readonly errorMessage: string | null;
 }
 
+const SESSION_RECOVERY_ERROR_MESSAGE =
+  'Votre session n’a pas pu être rétablie. Reconnectez-vous ou contactez votre administrateur.';
+
 const INITIAL_STATE: AuthenticationState = {
   errorMessage: null,
   session: null,
@@ -36,6 +43,7 @@ const INITIAL_STATE: AuthenticationState = {
 @Injectable({ providedIn: 'root' })
 export class AuthenticationService {
   private loginInProgress = false;
+  private unauthorizedRecovery: Observable<boolean> | null = null;
   private readonly state = signal<AuthenticationState>(INITIAL_STATE);
 
   readonly errorMessage = computed(() => this.state().errorMessage);
@@ -51,6 +59,7 @@ export class AuthenticationService {
     @Inject(AUTHENTICATION_PROVIDER)
     private readonly authenticationProvider: AuthenticationProvider,
     private readonly technicalErrorService: TechnicalErrorService,
+    private readonly applicationNavigationService: ApplicationNavigationService,
   ) {
     this.isLocalAuthentication = authenticationProvider.isLocalAuthentication;
   }
@@ -94,6 +103,45 @@ export class AuthenticationService {
       });
   }
 
+  /**
+   * Point d'entrée central des 401 reçus pendant l'utilisation normale de
+   * l'application. Les appels simultanés partagent la même tentative afin de
+   * ne jamais déclencher plusieurs redirections concurrentes.
+   *
+   * Retourne `true` lorsque la session a été reconstruite et que l'appel
+   * d'origine peut être rejoué.
+   */
+  handleUnauthorized(): Observable<boolean> {
+    if (this.unauthorizedRecovery !== null) {
+      return this.unauthorizedRecovery;
+    }
+
+    this.unauthorizedRecovery = this.authenticationProvider
+      .recover(this.applicationNavigationService.getCurrentAbsoluteUrl())
+      .pipe(
+        switchMap((hasAccessToken) => {
+          if (!hasAccessToken) {
+            this.setUnauthenticated(SESSION_RECOVERY_ERROR_MESSAGE);
+            return of(false);
+          }
+
+          return this.initializeAssistantCoreSession(false).pipe(
+            map(() => this.isAuthenticated()),
+          );
+        }),
+        catchError((error: unknown) => {
+          this.handleError(error);
+          return of(false);
+        }),
+        finalize(() => {
+          this.unauthorizedRecovery = null;
+        }),
+        shareReplay({ bufferSize: 1, refCount: false }),
+      );
+
+    return this.unauthorizedRecovery;
+  }
+
   logout(): void {
     this.state.set({
       errorMessage: null,
@@ -117,8 +165,13 @@ export class AuthenticationService {
         });
       }),
       catchError((error: unknown) => {
-        if (!(error instanceof ApiError) || error.status !== 401 || !canRecover) {
+        if (!(error instanceof ApiError) || error.status !== 401) {
           return throwError(() => error);
+        }
+
+        if (!canRecover) {
+          this.setSessionRecoveryError();
+          return of(undefined);
         }
 
         return this.authenticationProvider.recover().pipe(
@@ -139,6 +192,18 @@ export class AuthenticationService {
       status: AuthenticationStatus.Unauthenticated,
     });
     return of(undefined);
+  }
+
+  /**
+   * Une identité fraîchement renouvelée qui reçoit encore un 401 signale un
+   * refus durable : l'état d'erreur évite de relancer une connexion en boucle.
+   */
+  private setSessionRecoveryError(): void {
+    this.state.set({
+      errorMessage: SESSION_RECOVERY_ERROR_MESSAGE,
+      session: null,
+      status: AuthenticationStatus.Error,
+    });
   }
 
   private setError(error: unknown): void {

@@ -6,7 +6,11 @@ export interface AuthenticationProvider {
 
   initialize(): Observable<boolean>;
   login(): Observable<boolean>;
-  recover(): Observable<boolean>;
+  /**
+   * `redirectStartPage` permet de revenir sur la page en cours lorsque la
+   * reprise exige une redirection interactive.
+   */
+  recover(redirectStartPage?: string): Observable<boolean>;
   logout(): Observable<void>;
 }
 
