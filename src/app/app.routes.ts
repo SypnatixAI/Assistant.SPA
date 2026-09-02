@@ -45,6 +45,20 @@ export const routes: Routes = [
     title: 'Configuration de votre espace | onPremia',
   },
   {
+    path: 'auth/sign-in',
+    loadComponent: () =>
+      import('./features/auth/pages/login-page/login-page').then(
+        ({ LoginPage }) => LoginPage,
+      ),
+    title: 'Connexion | onPremia',
+  },
+  /**
+   * `/login` reste une route à part entière, et non une redirection : c'est
+   * l'adresse enregistrée comme redirect URI dans Entra, où Microsoft renvoie
+   * l'utilisateur. Elle deviendra une redirection vers `/auth/sign-in` une fois
+   * les URIs mises à jour dans le portail.
+   */
+  {
     path: 'login',
     loadComponent: () =>
       import('./features/auth/pages/login-page/login-page').then(
@@ -59,6 +73,21 @@ export const routes: Routes = [
         ({ AccessDeniedPage }) => AccessDeniedPage,
       ),
     title: 'Accès refusé | onPremia',
+  },
+  /**
+   * Retour de consentement unique : l'issue voyage en paramètre `status`. Les
+   * deux anciennes adresses restent servies tant que le backend n'a pas basculé
+   * sur celle-ci.
+   */
+  {
+    path: 'auth/microsoft/callback',
+    canActivate: [AuthGuard],
+    data: { onboardingMode: true },
+    loadComponent: () =>
+      import(
+        './features/microsoft365/pages/microsoft365-administration-page/microsoft365-administration-page'
+      ).then(({ Microsoft365AdministrationPage }) => Microsoft365AdministrationPage),
+    title: 'Connexion Microsoft 365 | onPremia',
   },
   {
     path: 'microsoft365/consent/success',

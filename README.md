@@ -41,7 +41,12 @@ Les adresses suivent une convention par espace : `/app` pour l’application,
 
 - `/` : point d’entrée; les gardes envoient vers la connexion, la configuration
   ou l’espace applicatif selon l’état de la session;
-- `/login` : lance automatiquement la connexion professionnelle Microsoft;
+- `/auth/sign-in` : lance automatiquement la connexion professionnelle
+  Microsoft;
+- `/login` : même page, conservée parce que cette adresse est enregistrée
+  comme redirect URI dans Entra;
+- `/auth/microsoft/callback` : retour de consentement Microsoft; l’issue voyage
+  dans le paramètre `status`;
 - `/app/chat` : espace de chat affiché uniquement après une session
   AssistantCore valide;
 - `/app/settings/microsoft365` : administration de la connexion Microsoft 365;
@@ -57,9 +62,21 @@ Les anciennes adresses restent valides et redirigent vers la nouvelle
 structure : `/chat`, `/onboarding`, `/administration/microsoft365` et
 `/access-denied`.
 
-Les retours de consentement Microsoft (`/microsoft365/consent/success` et
-`/microsoft365/consent/error`) restent inchangés : leur adresse est configurée
-côté backend et Entra.
+Les anciens retours de consentement (`/microsoft365/consent/success` et
+`/microsoft365/consent/error`) restent servis tant que le backend n’a pas
+basculé sur `/auth/microsoft/callback`.
+
+### Reste à faire hors du dépôt
+
+Deux changements externes permettront de terminer la convention d’URL :
+
+1. Enregistrer `/auth/sign-in` comme redirect URI et post-logout redirect URI
+   dans l’App Registration Entra de chaque environnement. `ENTRA_REDIRECT_ROUTE`
+   pourra alors pointer sur `/auth/sign-in` et `/login` devenir une simple
+   redirection.
+2. Faire pointer le retour de consentement du backend sur
+   `/auth/microsoft/callback?status=success` ou `?status=error`. Les deux
+   anciennes routes pourront alors être supprimées.
 La page de connexion envoie immédiatement l’utilisateur vers Microsoft, sans
 étape ni bouton intermédiaire. Une annulation ou un consentement refusé reste
 affiché sans relancer automatiquement la redirection.

@@ -5,11 +5,21 @@ import { Router, UrlTree } from '@angular/router';
 export const APPLICATION_ROUTES = {
   accessDenied: '/auth/forbidden',
   chat: '/app/chat',
-  login: '/login',
   microsoft365Administration: '/app/settings/microsoft365',
+  microsoftCallback: '/auth/microsoft/callback',
   onboarding: '/setup',
+  signIn: '/auth/sign-in',
   technicalError: '/technical-error',
 } as const;
+
+/**
+ * Adresse enregistrée comme redirect URI dans l'App Registration Entra. Elle
+ * reste distincte de `signIn` tant que le portail n'a pas été mis à jour :
+ * MSAL exige une correspondance exacte. Une fois les URIs Entra alignées sur
+ * `/auth/sign-in`, cette constante peut pointer sur `APPLICATION_ROUTES.signIn`
+ * et la route `/login` devenir une simple redirection.
+ */
+export const ENTRA_REDIRECT_ROUTE = '/login';
 
 @Injectable({ providedIn: 'root' })
 export class ApplicationNavigationService {
@@ -19,7 +29,7 @@ export class ApplicationNavigationService {
   ) {}
 
   createLoginUrlTree(): UrlTree {
-    return this.router.createUrlTree([APPLICATION_ROUTES.login]);
+    return this.router.createUrlTree([APPLICATION_ROUTES.signIn]);
   }
 
   createAccessDeniedUrlTree(): UrlTree {
@@ -43,7 +53,7 @@ export class ApplicationNavigationService {
   }
 
   getLoginAbsoluteUrl(): string {
-    return this.getAbsoluteUrl(APPLICATION_ROUTES.login);
+    return this.getAbsoluteUrl(ENTRA_REDIRECT_ROUTE);
   }
 
   getCurrentAbsoluteUrl(): string {

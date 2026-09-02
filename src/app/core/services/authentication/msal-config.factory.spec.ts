@@ -33,8 +33,9 @@ describe('MSAL configuration factories', () => {
     // Then
     expect(result.interactionType).toBe(InteractionType.Redirect);
     expect(result.authRequest).toEqual({ scopes: [expectedScope] });
-    expect(result.loginFailedRoute).toBe('/login');
+    expect(result.loginFailedRoute).toBe('/auth/sign-in');
   });
+
 
   it('Given_PublicConfiguration_When_createMsalInterceptorConfigIsCalled_Then_OnlyAssistantCoreApiIsProtected', () => {
     // Given
