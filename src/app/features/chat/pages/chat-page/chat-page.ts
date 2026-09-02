@@ -1,9 +1,11 @@
 import {
+  afterNextRender,
   ChangeDetectionStrategy,
   Component,
   computed,
   ElementRef,
   HostListener,
+  Injector,
   OnDestroy,
   Signal,
   signal,
@@ -73,6 +75,7 @@ export class ChatPage implements OnDestroy {
     private readonly conversationsApiService: ConversationsApiService,
     private readonly messagesApiService: MessagesApiService,
     protected readonly conversationListState: ConversationListState,
+    private readonly injector: Injector,
   ) {
     this.session = authenticationService.session;
     this.conversationListState.load();
@@ -87,9 +90,16 @@ export class ChatPage implements OnDestroy {
     this.historySubscription?.unsubscribe();
   }
 
+  /**
+   * Le tiroir est un dialogue modal : le focus doit y entrer. L'attente du rendu
+   * est nécessaire, la liste des barres latérales ne contenant pas encore le
+   * tiroir au moment du clic.
+   */
   openNavigation(): void {
     this.isNavigationOpen.set(true);
-    queueMicrotask(() => this.sidebars().at(-1)?.focusCloseButton());
+    afterNextRender(() => this.sidebars().at(-1)?.focusCloseButton(), {
+      injector: this.injector,
+    });
   }
 
   closeNavigation(restoreFocus = true): void {

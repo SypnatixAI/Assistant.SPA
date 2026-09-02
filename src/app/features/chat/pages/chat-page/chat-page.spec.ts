@@ -307,6 +307,114 @@ describe('ChatPage', () => {
     expect(getMessages).toHaveBeenCalledTimes(2);
   });
 
+
+  it('Given_AVisibleMessage_When_startNewConversation_Then_MessageIsClearedAndFocusReturnsToComposer', async () => {
+    // Given
+    const component = fixture.componentInstance;
+    component.submitMessage('Question locale');
+    fixture.detectChanges();
+
+    // When
+    const newConversationButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.new-conversation');
+    newConversationButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.textContent).not.toContain('Question locale');
+    expect(document.activeElement).toBe(fixture.nativeElement.querySelector('textarea'));
+  });
+
+  it('Given_TheMobileNavigation_When_openNavigation_Then_FocusMovesIntoTheDrawer', async () => {
+    // Given
+    const navigationButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.navigation-trigger');
+
+    // When
+    navigationButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // Then
+    const panel: HTMLElement = fixture.nativeElement.querySelector('.mobile-navigation__panel');
+    expect(panel).not.toBeNull();
+    expect(panel.contains(document.activeElement)).toBeTrue();
+  });
+
+  it('Given_OpenMobileNavigation_When_handleDocumentKeydownReceivesEscape_Then_NavigationClosesAndFocusReturnsToTrigger', async () => {
+    // Given
+    const navigationButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.navigation-trigger');
+    navigationButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+
+    // When
+    document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+    fixture.detectChanges();
+    await fixture.whenStable();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.mobile-navigation')).toBeNull();
+    expect(document.activeElement).toBe(navigationButton);
+  });
+
+  it('Given_ClosedMobileNavigation_When_handleDocumentKeydownReceivesEscape_Then_NothingHappens', () => {
+    // Given
+    const component = fixture.componentInstance;
+
+    // When
+    document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Escape' }));
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.mobile-navigation')).toBeNull();
+    expect(component).toBeTruthy();
+  });
+
+  it('Given_FocusOnFirstDrawerControl_When_handleDocumentKeydownReceivesShiftTab_Then_FocusWrapsToLastControl', async () => {
+    // Given
+    const focusableElements = await openDrawerAndReadFocusableElements();
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    firstElement.focus();
+
+    // When
+    document.dispatchEvent(
+      new KeyboardEvent('keydown', { bubbles: true, key: 'Tab', shiftKey: true }),
+    );
+
+    // Then
+    expect(document.activeElement).toBe(lastElement);
+  });
+
+  it('Given_FocusOnLastDrawerControl_When_handleDocumentKeydownReceivesTab_Then_FocusWrapsToFirstControl', async () => {
+    // Given
+    const focusableElements = await openDrawerAndReadFocusableElements();
+    const firstElement = focusableElements[0];
+    const lastElement = focusableElements[focusableElements.length - 1];
+    lastElement.focus();
+
+    // When
+    document.dispatchEvent(new KeyboardEvent('keydown', { bubbles: true, key: 'Tab' }));
+
+    // Then
+    expect(document.activeElement).toBe(firstElement);
+  });
+
+  async function openDrawerAndReadFocusableElements(): Promise<NodeListOf<HTMLElement>> {
+    const navigationButton: HTMLButtonElement =
+      fixture.nativeElement.querySelector('.navigation-trigger');
+    navigationButton.click();
+    await fixture.whenStable();
+    fixture.detectChanges();
+    const panel: HTMLElement = fixture.nativeElement.querySelector('.mobile-navigation__panel');
+
+    return panel.querySelectorAll<HTMLElement>('a[href], button:not([disabled])');
+  }
+
+
   function createResponse(): SendMessageResponse {
     return {
       conversationId: 'conversation-id',
