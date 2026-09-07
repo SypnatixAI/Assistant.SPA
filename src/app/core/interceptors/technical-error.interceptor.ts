@@ -11,8 +11,8 @@ import { catchError, Observable, throwError } from 'rxjs';
 import { TechnicalErrorService } from '../services/errors/technical-error.service';
 
 /**
- * Endpoints facultatifs dont l'echec est deja gere localement par leur propre
- * etat (message discret + bouton "Reessayer" dans l'interface). Un echec sur
+ * Endpoints facultatifs dont l'échec est déjà géré localement par leur propre
+ * état (message discret + bouton "Réessayer" dans l'interface). Un échec sur
  * l'un d'eux ne doit jamais faire basculer toute l'application sur la page
  * d'erreur technique.
  */
