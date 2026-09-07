@@ -175,6 +175,23 @@ configuration après un déploiement.
 Ces données sont visibles dans le navigateur et ne doivent jamais contenir de
 secret, de client secret, de clé API ou d’adresse privée de production.
 
+## Récupération après un refus d’accès ou une erreur technique
+
+Un refus d’accès et une erreur technique sont des états récupérables. Les pages
+`/auth/forbidden` et `/technical-error` ne doivent pas devenir des impasses
+après le rétablissement du service ou des permissions.
+
+- `/auth/forbidden` permet de vérifier de nouveau les autorisations;
+- cette vérification force au besoin le renouvellement du jeton MSAL, puis
+  rappelle `GET /api/core/authenticateUser`;
+- si l’accès est rétabli, l’utilisateur retourne à sa destination initiale, à
+  `/setup` ou à `/app/chat`;
+- le cache MSAL ne doit jamais être supprimé manuellement en vidant complètement
+  `sessionStorage`;
+- `/technical-error` conserve la destination ayant échoué;
+- un refresh ou « Réessayer » relance cette destination;
+- si elle n’est plus disponible, `/app/chat` est utilisé comme fallback.
+
 ## Vérification manuelle de la connexion
 
 1. Vérifier les valeurs publiques dans
