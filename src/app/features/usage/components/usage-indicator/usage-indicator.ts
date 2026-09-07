@@ -1,3 +1,4 @@
+import { DecimalPipe } from '@angular/common';
 import { ChangeDetectionStrategy, Component, input, output } from '@angular/core';
 
 import { TokenUsageSnapshot } from '../../../../domain/usage/token-usage';
@@ -9,6 +10,7 @@ const DATE_FORMATTER = new Intl.DateTimeFormat('fr-CA', {
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
+  imports: [DecimalPipe],
   selector: 'app-usage-indicator',
   styleUrl: './usage-indicator.css',
   templateUrl: './usage-indicator.html',

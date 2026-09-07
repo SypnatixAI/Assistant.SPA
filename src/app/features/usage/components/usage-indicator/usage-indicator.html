@@ -13,5 +13,10 @@
         {{ formatRenewalDate(currentUsage.periodEndsAt) }}.
       </p>
     }
+  } @else if (usage(); as currentUsage) {
+    <span>
+      {{ currentUsage.tokensRemaining | number: '1.0-0' }} /
+      {{ currentUsage.tokenLimit | number: '1.0-0' }} jetons restants
+    </span>
   }
 </section>
