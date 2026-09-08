@@ -4,6 +4,10 @@ import { Subscription } from 'rxjs';
 import { ConversationsApiService } from '../../../core/services/api/conversations-api.service';
 import { ListConversationsResponse } from '../../../domain/conversations/conversation';
 import {
+  resolveConversationErrorMessage,
+  resolveConversationErrorRecovery,
+} from '../../../domain/errors/conversation-error';
+import {
   ChatConversationSummary,
   ConversationListStatus,
 } from '../../chat/models/chat-view-models';
@@ -20,13 +24,14 @@ export class ConversationListState {
   private readonly nextCursorValue = signal<string | null>(null);
   private readonly loadingNextPageValue = signal(false);
   private readonly nextPageErrorValue = signal<string | null>(null);
+  private readonly errorMessageValue = signal(CONVERSATION_LIST_ERROR);
   private loadSubscription: Subscription | null = null;
 
   readonly conversations = this.conversationsValue.asReadonly();
   readonly status = this.statusValue.asReadonly();
   readonly isLoadingNextPage = this.loadingNextPageValue.asReadonly();
   readonly nextPageError = this.nextPageErrorValue.asReadonly();
-  readonly errorMessage = CONVERSATION_LIST_ERROR;
+  readonly errorMessage = this.errorMessageValue.asReadonly();
   readonly hasNextPage = computed(() => this.nextCursorValue() !== null);
 
   constructor(private readonly conversationsApiService: ConversationsApiService) {}
@@ -42,7 +47,12 @@ export class ConversationListState {
 
     this.loadSubscription = this.conversationsApiService.listConversations().subscribe({
       next: (page) => this.applyFirstPage(page),
-      error: () => this.statusValue.set('error'),
+      error: (error: unknown) => {
+        this.errorMessageValue.set(
+          resolveConversationErrorMessage(error, CONVERSATION_LIST_ERROR),
+        );
+        this.statusValue.set('error');
+      },
     });
   }
 
@@ -64,8 +74,18 @@ export class ConversationListState {
       .listConversations({ cursor })
       .subscribe({
         next: (page) => this.appendPage(page),
-        error: () => {
-          this.nextPageErrorValue.set(CONVERSATION_NEXT_PAGE_ERROR);
+        error: (error: unknown) => {
+          this.nextPageErrorValue.set(
+            resolveConversationErrorMessage(error, CONVERSATION_NEXT_PAGE_ERROR),
+          );
+          /*
+           * Un curseur que le backend refuse ne redeviendra pas valide : le
+           * bouton disparaît pour que l'utilisateur recharge la liste au lieu
+           * d'insister sur une pagination morte.
+           */
+          if (resolveConversationErrorRecovery(error) === 'reload-list') {
+            this.nextCursorValue.set(null);
+          }
           this.loadingNextPageValue.set(false);
         },
       });

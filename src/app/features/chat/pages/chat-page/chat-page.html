@@ -3,7 +3,7 @@
     <div class="desktop-sidebar" [attr.inert]="isNavigationOpen() ? '' : null">
       <app-conversation-sidebar
         [conversations]="conversationListState.conversations()"
-        [errorMessage]="conversationListState.errorMessage"
+        [errorMessage]="conversationListState.errorMessage()"
         [hasNextPage]="conversationListState.hasNextPage()"
         [isLoadingNextPage]="conversationListState.isLoadingNextPage()"
         [nextPageErrorMessage]="conversationListState.nextPageError()"
@@ -34,7 +34,7 @@
         >
           <app-conversation-sidebar
             [conversations]="conversationListState.conversations()"
-            [errorMessage]="conversationListState.errorMessage"
+            [errorMessage]="conversationListState.errorMessage()"
             [hasNextPage]="conversationListState.hasNextPage()"
             [isLoadingNextPage]="conversationListState.isLoadingNextPage()"
             [nextPageErrorMessage]="conversationListState.nextPageError()"
@@ -90,8 +90,14 @@
           }
           @case ('error') {
             <div class="history-state" role="alert">
-              <p>Cette conversation n’a pas pu être chargée.</p>
-              <button type="button" (click)="retryConversationHistory()">Réessayer</button>
+              <p>{{ historyError() }}</p>
+              @if (historyRecovery() === 'start-new-conversation') {
+                <button type="button" (click)="startNewConversation()">
+                  Démarrer une nouvelle conversation
+                </button>
+              } @else {
+                <button type="button" (click)="retryConversationHistory()">Réessayer</button>
+              }
             </div>
           }
           @default {

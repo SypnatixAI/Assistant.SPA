@@ -2,6 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { of, throwError } from 'rxjs';
 
 import { ConversationsApiService } from '../../../core/services/api/conversations-api.service';
+import { ApiError } from '../../../domain/errors/api-error';
 import {
   ConversationSummaryResponse,
   ListConversationsResponse,
@@ -118,6 +119,52 @@ describe('ConversationListState', () => {
 
     // Then
     expect(state.status()).toBe('error');
+    expect(state.conversations().map((item) => item.id)).toEqual(['a']);
+  });
+
+  it('Given_ABackendErrorCode_When_load_Then_TheMessageExplainsTheCause', () => {
+    // Given
+    listConversations.and.returnValue(
+      throwError(
+        () => new ApiError(400, 'invalid_conversation_status', 'Invalid status.', null),
+      ),
+    );
+
+    // When
+    state.load();
+
+    // Then
+    expect(state.status()).toBe('error');
+    expect(state.errorMessage()).toBe('Ce filtre de conversations n’est pas reconnu.');
+  });
+
+  it('Given_ANetworkFailure_When_load_Then_TheGenericMessageIsKept', () => {
+    // Given
+    listConversations.and.returnValue(throwError(() => new Error('offline')));
+
+    // When
+    state.load();
+
+    // Then
+    expect(state.errorMessage()).toBe('Impossible de charger les conversations.');
+  });
+
+  it('Given_AnExpiredCursor_When_loadNextPage_Then_PaginationClosesAndTheListMustBeReloaded', () => {
+    // Given
+    listConversations.and.returnValue(of(page([conversation('a', 'Politique')], 'cursor-1')));
+    state.load();
+    listConversations.and.returnValue(
+      throwError(() => new ApiError(400, 'invalid_pagination', 'Invalid cursor.', null)),
+    );
+
+    // When
+    state.loadNextPage();
+
+    // Then
+    expect(state.nextPageError()).toBe(
+      'La suite de la liste n’est plus valide. Rechargez les conversations.',
+    );
+    expect(state.hasNextPage()).toBeFalse();
     expect(state.conversations().map((item) => item.id)).toEqual(['a']);
   });
 
