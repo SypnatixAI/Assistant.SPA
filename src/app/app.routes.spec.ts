@@ -15,7 +15,10 @@ import { Microsoft365ApiService } from './core/services/api/microsoft365-api.ser
 import { TechnicalErrorPage } from './shared/pages/technical-error-page/technical-error-page';
 
 describe('Application routes', () => {
+  let hasTechnicalError: boolean;
+
   beforeEach(() => {
+    hasTechnicalError = false;
     TestBed.configureTestingModule({
       providers: [
         provideRouter(routes),
@@ -30,7 +33,7 @@ describe('Application routes', () => {
         },
         {
           provide: TechnicalErrorService,
-          useValue: { hasTechnicalError: () => false },
+          useValue: { hasTechnicalError: () => hasTechnicalError },
         },
         {
           provide: Microsoft365ApiService,
@@ -65,6 +68,7 @@ describe('Application routes', () => {
 
   it('Given_TechnicalErrorRoute_When_NavigateByUrlIsCalled_Then_TechnicalErrorPageIsDisplayed', async () => {
     // Given
+    hasTechnicalError = true;
     const harness = await RouterTestingHarness.create();
 
     // When
@@ -74,6 +78,24 @@ describe('Application routes', () => {
     expect(harness.routeNativeElement?.querySelector('h1')?.textContent).toContain(
       'erreur technique',
     );
+  });
+
+  /**
+   * Vérifie que la garde est bien branchée sur la route : un refresh sur la
+   * page technique, sans erreur active, ne doit pas laisser l'utilisateur
+   * bloqué. La destination retenue repasse ensuite par les gardes normales,
+   * qui envoient ici vers la connexion faute de session.
+   */
+  it('Given_ARefreshWithoutActiveError_When_NavigateByUrlIsCalled_Then_TheTechnicalPageIsNotADeadEnd', async () => {
+    // Given
+    const harness = await RouterTestingHarness.create();
+    const location = TestBed.inject(Location);
+
+    // When
+    await harness.navigateByUrl('/technical-error?returnUrl=/app/chat', LoginPage);
+
+    // Then
+    expect(location.path()).toBe('/auth/sign-in');
   });
 
   it('Given_ProtectedRoute_When_NavigateByUrlIsCalled_Then_UserIsRedirectedToLogin', async () => {

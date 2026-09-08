@@ -23,4 +23,22 @@ describe('TechnicalErrorService', () => {
     ).toHaveBeenCalledTimes(1);
     expect(consoleError).toHaveBeenCalledTimes(1);
   });
+
+  it('Given_AnActiveTechnicalError_When_reset_Then_TheApplicationIsConsideredHealthyAgain', () => {
+    // Given
+    const applicationNavigationService =
+      jasmine.createSpyObj<ApplicationNavigationService>(
+        'ApplicationNavigationService',
+        ['navigateToTechnicalError'],
+      );
+    spyOn(console, 'error');
+    const service = new TechnicalErrorService(applicationNavigationService);
+    service.report(new Error('panne'));
+
+    // When
+    service.reset();
+
+    // Then
+    expect(service.hasTechnicalError()).toBeFalse();
+  });
 });

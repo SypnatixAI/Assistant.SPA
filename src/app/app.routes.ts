@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 
 import { AuthGuard } from './core/guards/auth.guard';
+import { TechnicalErrorGuard } from './core/guards/technical-error.guard';
 import { Microsoft365OnboardingGuard } from './core/guards/microsoft365-onboarding.guard';
 
 /**
@@ -111,6 +112,7 @@ export const routes: Routes = [
   },
   {
     path: 'technical-error',
+    canActivate: [TechnicalErrorGuard],
     loadComponent: () =>
       import('./shared/pages/technical-error-page/technical-error-page').then(
         ({ TechnicalErrorPage }) => TechnicalErrorPage,

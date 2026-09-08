@@ -5,6 +5,7 @@ import {
   TECHNICAL_ERROR_CONTENT,
   TECHNICAL_ERROR_ICONS,
 } from '../../../core/errors/technical-error-content';
+import { TechnicalErrorService } from '../../../core/services/errors/technical-error.service';
 import { ApplicationNavigationService } from '../../../core/services/navigation/application-navigation.service';
 
 @Component({
@@ -20,9 +21,16 @@ export class TechnicalErrorPage {
   constructor(
     private readonly activatedRoute: ActivatedRoute,
     private readonly applicationNavigationService: ApplicationNavigationService,
+    private readonly technicalErrorService: TechnicalErrorService,
   ) {}
 
+  /**
+   * L'état technique est refermé avant la relance : le rechargement repart
+   * d'une application saine, et si la panne persiste elle sera signalée de
+   * nouveau par le parcours normal.
+   */
   reloadApplication(): void {
+    this.technicalErrorService.reset();
     this.applicationNavigationService.reloadApplication(
       this.activatedRoute.snapshot.queryParamMap.get('returnUrl'),
     );

@@ -13,14 +13,21 @@ describe('ApplicationNavigationService', () => {
   let reload: jasmine.Spy;
   let navigateByUrl: jasmine.Spy;
   let createUrlTree: jasmine.Spy;
-  let router: { url: string; createUrlTree: jasmine.Spy; navigateByUrl: jasmine.Spy };
+  let parseUrl: jasmine.Spy;
+  let router: {
+    url: string;
+    createUrlTree: jasmine.Spy;
+    navigateByUrl: jasmine.Spy;
+    parseUrl: jasmine.Spy;
+  };
 
   beforeEach(() => {
     assign = jasmine.createSpy('assign');
     reload = jasmine.createSpy('reload');
     createUrlTree = jasmine.createSpy('createUrlTree').and.returnValue(APPLICATION_ROUTES.technicalError);
     navigateByUrl = jasmine.createSpy('navigateByUrl');
-    router = { url: '/app/chat', createUrlTree, navigateByUrl };
+    parseUrl = jasmine.createSpy('parseUrl').and.callFake((url: string) => url);
+    router = { url: '/app/chat', createUrlTree, navigateByUrl, parseUrl };
 
     TestBed.configureTestingModule({
       providers: [
@@ -124,7 +131,7 @@ describe('ApplicationNavigationService', () => {
     expect(navigateByUrl).not.toHaveBeenCalled();
   });
 
-  it('Given_AnUnexpectedState_When_reloadApplication_Then_TheDocumentIsReloaded', () => {
+  it('Given_NoReturnUrl_When_reloadApplication_Then_TheChatIsUsedAsFallback', () => {
     // Given
     const service = TestBed.inject(ApplicationNavigationService);
 
@@ -132,6 +139,64 @@ describe('ApplicationNavigationService', () => {
     service.reloadApplication();
 
     // Then
-    expect(reload).toHaveBeenCalledTimes(1);
+    expect(assign).toHaveBeenCalledOnceWith(APPLICATION_ROUTES.chat);
+    expect(reload).not.toHaveBeenCalled();
+  });
+
+  it('Given_AFailedApplicationDestination_When_reloadApplication_Then_ThatDestinationIsRelaunched', () => {
+    // Given
+    const service = TestBed.inject(ApplicationNavigationService);
+
+    // When
+    service.reloadApplication('/app/settings/microsoft365?tab=sources');
+
+    // Then
+    expect(assign).toHaveBeenCalledOnceWith('/app/settings/microsoft365?tab=sources');
+  });
+
+  it('Given_AnApplicationDestination_When_resolveReturnUrl_Then_ThePathAndQueryAreKept', () => {
+    // Given
+    const service = TestBed.inject(ApplicationNavigationService);
+
+    // When
+    const resolved = service.resolveReturnUrl(`${origin}/app/chat?draft=1#bas`);
+
+    // Then
+    expect(resolved).toBe('/app/chat?draft=1#bas');
+  });
+
+  it('Given_AnExternalDestination_When_resolveReturnUrl_Then_TheChatIsUsedInstead', () => {
+    // Given
+    const service = TestBed.inject(ApplicationNavigationService);
+
+    // When
+    const resolved = service.resolveReturnUrl('https://attaquant.test/app/chat');
+
+    // Then
+    expect(resolved).toBe(APPLICATION_ROUTES.chat);
+  });
+
+  it('Given_TheTechnicalErrorPageItself_When_resolveReturnUrl_Then_TheChatIsUsedInstead', () => {
+    // Given
+    const service = TestBed.inject(ApplicationNavigationService);
+
+    // When
+    const resolved = service.resolveReturnUrl(
+      `${APPLICATION_ROUTES.technicalError}?returnUrl=/app/chat`,
+    );
+
+    // Then
+    expect(resolved).toBe(APPLICATION_ROUTES.chat);
+  });
+
+  it('Given_AnUnreadableDestination_When_resolveReturnUrl_Then_TheChatIsUsedInstead', () => {
+    // Given
+    const service = TestBed.inject(ApplicationNavigationService);
+
+    // When
+    const resolved = service.resolveReturnUrl('http://[oups');
+
+    // Then
+    expect(resolved).toBe(APPLICATION_ROUTES.chat);
   });
 });

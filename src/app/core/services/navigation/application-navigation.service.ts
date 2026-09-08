@@ -40,6 +40,40 @@ export class ApplicationNavigationService {
     return this.router.createUrlTree([APPLICATION_ROUTES.technicalError]);
   }
 
+  /**
+   * Résout la destination d'une reprise après erreur technique.
+   *
+   * Un `returnUrl` n'est accepté que s'il appartient à l'origine de
+   * l'application et s'il ne ramène pas sur la page technique elle-même, sans
+   * quoi la reprise tournerait en rond. Toute autre valeur, y compris absente
+   * ou illisible, retombe sur le chat.
+   */
+  resolveReturnUrl(returnUrl: string | null | undefined): string {
+    if (!returnUrl) {
+      return APPLICATION_ROUTES.chat;
+    }
+
+    let resolvedUrl: URL;
+    try {
+      resolvedUrl = new URL(returnUrl, this.document.location.origin);
+    } catch {
+      return APPLICATION_ROUTES.chat;
+    }
+
+    if (
+      resolvedUrl.origin !== this.document.location.origin ||
+      this.isTechnicalErrorPath(resolvedUrl.pathname)
+    ) {
+      return APPLICATION_ROUTES.chat;
+    }
+
+    return `${resolvedUrl.pathname}${resolvedUrl.search}${resolvedUrl.hash}`;
+  }
+
+  createReturnUrlTree(returnUrl: string | null | undefined): UrlTree {
+    return this.router.parseUrl(this.resolveReturnUrl(returnUrl));
+  }
+
   createOnboardingUrlTree(): UrlTree {
     return this.router.createUrlTree([APPLICATION_ROUTES.onboarding]);
   }
@@ -104,18 +138,19 @@ export class ApplicationNavigationService {
     this.document.location.assign(url.href);
   }
 
+  /**
+   * Relance la destination qui avait échoué. Le rechargement complet est
+   * volontaire : il redémarre l'application, donc les gardes, les
+   * intercepteurs et les appels réseau du parcours normal.
+   */
   reloadApplication(returnUrl: string | null = null): void {
-    if (returnUrl !== null && this.isApplicationUrl(returnUrl)) {
-      this.document.location.assign(returnUrl);
-      return;
-    }
-
-    this.document.location.reload();
+    this.document.location.assign(this.resolveReturnUrl(returnUrl));
   }
 
-  private isApplicationUrl(url: string): boolean {
-    const resolvedUrl = new URL(url, this.document.location.origin);
-
-    return resolvedUrl.origin === this.document.location.origin;
+  private isTechnicalErrorPath(pathname: string): boolean {
+    return (
+      pathname === APPLICATION_ROUTES.technicalError ||
+      pathname.startsWith(`${APPLICATION_ROUTES.technicalError}/`)
+    );
   }
 }

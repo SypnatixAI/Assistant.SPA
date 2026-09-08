@@ -1,21 +1,28 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { ActivatedRoute, convertToParamMap } from '@angular/router';
 
+import { TechnicalErrorService } from '../../../core/services/errors/technical-error.service';
 import { ApplicationNavigationService } from '../../../core/services/navigation/application-navigation.service';
 import { TechnicalErrorPage } from './technical-error-page';
 
 describe('TechnicalErrorPage', () => {
   let fixture: ComponentFixture<TechnicalErrorPage>;
   let reloadApplication: jasmine.Spy;
+  let reset: jasmine.Spy;
 
   beforeEach(async () => {
     reloadApplication = jasmine.createSpy('reloadApplication');
+    reset = jasmine.createSpy('reset');
     await TestBed.configureTestingModule({
       imports: [TechnicalErrorPage],
       providers: [
         {
           provide: ApplicationNavigationService,
           useValue: { reloadApplication },
+        },
+        {
+          provide: TechnicalErrorService,
+          useValue: { reset },
         },
         {
           provide: ActivatedRoute,
@@ -56,5 +63,16 @@ describe('TechnicalErrorPage', () => {
 
     // Then
     expect(reloadApplication).toHaveBeenCalledWith('/chat');
+  });
+
+  it('Given_AnActiveTechnicalError_When_reloadApplicationIsCalled_Then_TheStateIsResetBeforeTheRetry', () => {
+    // Given
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('button');
+
+    // When
+    button.click();
+
+    // Then
+    expect(reset).toHaveBeenCalledBefore(reloadApplication);
   });
 });

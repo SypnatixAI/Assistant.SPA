@@ -21,4 +21,13 @@ export class TechnicalErrorService {
     this.technicalErrorActive.set(true);
     this.applicationNavigationService.navigateToTechnicalError();
   }
+
+  /**
+   * Referme l'état technique avant une nouvelle tentative. Sans cela, les
+   * gardes renverraient immédiatement sur la page d'erreur et la reprise
+   * n'atteindrait jamais la destination visée.
+   */
+  reset(): void {
+    this.technicalErrorActive.set(false);
+  }
 }
