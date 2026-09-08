@@ -175,6 +175,42 @@ configuration après un déploiement.
 Ces données sont visibles dans le navigateur et ne doivent jamais contenir de
 secret, de client secret, de clé API ou d’adresse privée de production.
 
+## Erreurs de l’API
+
+Le backend renvoie un corps d’erreur en camelCase : `message`, `detail` et
+`code`. L’intercepteur `apiErrorInterceptor` le transforme en `ApiError`.
+`detail` n’est rempli qu’en développement, avec une copie de `message` : il sert
+au diagnostic local et n’est pas affiché.
+
+Sur les 400, 404 et 409 des conversations, `code` n’est jamais nul. Il retombe
+sur `bad_request`, `not_found` ou `conflict` quand aucun code plus précis ne
+s’applique.
+`src/app/domain/errors/conversation-error.ts` traduit ces codes en messages
+français et indique l’action de repli utile.
+
+| Code | Message affiché | Action proposée |
+| --- | --- | --- |
+| `conversation_not_found` | Cette conversation n’existe plus. | Démarrer une nouvelle conversation |
+| `invalid_pagination` | La suite de la liste n’est plus valide. Rechargez les conversations. | Recharger la liste |
+| `conversation_archived` | Cette conversation est archivée : elle n’accepte plus de nouveaux messages. | Réessayer |
+| `invalid_conversation_status` | Ce filtre de conversations n’est pas reconnu. | Réessayer |
+| `invalid_conversation_title` | Ce titre est vide ou trop long. | Réessayer |
+| `empty_conversation_patch` | Aucune modification à enregistrer. | Réessayer |
+| `invalid_version_header` | La version de cette conversation est illisible. | Réessayer |
+| `conversation_version_conflict` | Cette conversation a été modifiée ailleurs. Rechargez-la avant de recommencer. | Réessayer |
+| `bad_request` | Cette demande n’a pas été acceptée par onPremia. | Réessayer |
+| `not_found` | Cet élément est introuvable. | Démarrer une nouvelle conversation |
+| `conflict` | Cette action entre en conflit avec une modification récente. Rechargez avant de recommencer. | Réessayer |
+
+Un code absent de cette table, comme une panne réseau sans corps exploitable,
+conserve le message générique de la surface concernée.
+
+Les codes liés au renommage et à l’archivage (`invalid_version_header`,
+`empty_conversation_patch`, `invalid_conversation_title`,
+`conversation_version_conflict`) ainsi que `invalid_conversation_status` sont
+traduits par avance : la SPA n’appelle pas encore `PATCH /api/conversations/{id}`
+et n’envoie pas le paramètre `status`.
+
 ## Vérification manuelle de la connexion
 
 1. Vérifier les valeurs publiques dans

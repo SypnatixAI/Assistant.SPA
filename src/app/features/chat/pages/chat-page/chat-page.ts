@@ -17,6 +17,12 @@ import { MessagesApiService } from '../../../../core/services/api/messages-api.s
 import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
 import {
+  ConversationErrorRecovery,
+  findConversationErrorMessage,
+  resolveConversationErrorMessage,
+  resolveConversationErrorRecovery,
+} from '../../../../domain/errors/conversation-error';
+import {
   SendMessageResponse,
   SendMessageStreamEvent,
 } from '../../../../domain/messages/send-message';
@@ -35,6 +41,8 @@ import { ChatMessage } from '../../models/chat-view-models';
 type ConversationHistoryStatus = 'error' | 'loading' | 'ready';
 
 const QUOTA_EXHAUSTED_ERROR_CODE = 'organization_token_quota_exhausted';
+const CONVERSATION_HISTORY_ERROR = 'Cette conversation n’a pas pu être chargée.';
+const SEND_ERROR = 'La réponse n’a pas pu être terminée. Réessayez dans quelques instants.';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -60,6 +68,8 @@ export class ChatPage implements OnDestroy {
   protected readonly messages = signal<readonly ChatMessage[]>([]);
   protected readonly selectedConversationId = signal<string | null>(null);
   protected readonly historyStatus = signal<ConversationHistoryStatus>('ready');
+  protected readonly historyError = signal(CONVERSATION_HISTORY_ERROR);
+  protected readonly historyRecovery = signal<ConversationErrorRecovery>('retry');
   /**
    * Le catalogue et le quota sont facultatifs : leurs endpoints n'existent pas
    * dans tous les environnements. Seul un quota explicitement épuisé bloque
@@ -196,10 +206,16 @@ export class ChatPage implements OnDestroy {
           this.historyStatus.set('ready');
           this.scrollConversationToBottom();
         },
-        error: () => {
-          if (this.selectedConversationId() === conversationId) {
-            this.historyStatus.set('error');
+        error: (error: unknown) => {
+          if (this.selectedConversationId() !== conversationId) {
+            return;
           }
+
+          this.historyError.set(
+            resolveConversationErrorMessage(error, CONVERSATION_HISTORY_ERROR),
+          );
+          this.historyRecovery.set(resolveConversationErrorRecovery(error));
+          this.historyStatus.set('error');
         },
       });
   }
@@ -368,7 +384,7 @@ export class ChatPage implements OnDestroy {
       case 'ai_provider_unavailable':
         return 'Le service d’assistance est temporairement indisponible. Réessayez dans quelques instants.';
       default:
-        return 'La réponse n’a pas pu être terminée. Réessayez dans quelques instants.';
+        return findConversationErrorMessage(errorCode) ?? SEND_ERROR;
     }
   }
 

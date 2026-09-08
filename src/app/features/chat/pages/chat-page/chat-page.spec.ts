@@ -7,6 +7,7 @@ import { MessagesApiService } from '../../../../core/services/api/messages-api.s
 import { AuthenticationService } from '../../../../core/services/authentication/authentication.service';
 import { AuthenticatedSession } from '../../../../domain/auth/authenticated-session';
 import { GetConversationMessagesResponse } from '../../../../domain/conversations/conversation';
+import { ApiError } from '../../../../domain/errors/api-error';
 import {
   SendMessageResponse,
   SendMessageStreamEvent,
@@ -358,6 +359,44 @@ describe('ChatPage', () => {
     expect(getMessages).toHaveBeenCalledTimes(2);
   });
 
+
+  it('Given_ADeletedConversation_When_selectConversation_Then_ANewConversationIsProposedInsteadOfARetry', () => {
+    // Given
+    getMessages.and.returnValue(
+      throwError(
+        () => new ApiError(404, 'conversation_not_found', 'Conversation not found.', null),
+      ),
+    );
+
+    // When
+    fixture.componentInstance.selectConversation('conversation-id');
+    fixture.detectChanges();
+
+    // Then
+    const historyState: HTMLElement = fixture.nativeElement.querySelector('.history-state');
+    const actionButton: HTMLButtonElement = historyState.querySelector('button') as HTMLButtonElement;
+    expect(historyState.textContent).toContain('Cette conversation n’existe plus.');
+    expect(actionButton.textContent).toContain('Démarrer une nouvelle conversation');
+
+    actionButton.click();
+    expect(getMessages).toHaveBeenCalledTimes(1);
+  });
+
+  it('Given_AnArchivedConversation_When_submitMessageIsCalled_Then_TheArchivedMessageIsDisplayed', () => {
+    // Given
+    const stream = new Subject<SendMessageStreamEvent>();
+    streamMessage.and.returnValue(stream);
+
+    // When
+    fixture.componentInstance.submitMessage('Bonjour');
+    stream.next({ type: 'error', code: 'conversation_archived' });
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('.send-error').textContent).toContain(
+      'Cette conversation est archivée',
+    );
+  });
 
   it('Given_AVisibleMessage_When_startNewConversation_Then_MessageIsClearedAndFocusReturnsToComposer', async () => {
     // Given
