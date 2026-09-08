@@ -89,7 +89,7 @@ describe('ChatPage', () => {
           provide: ConversationListState,
           useValue: {
             conversations,
-            errorMessage: 'Impossible de charger les conversations.',
+            errorMessage: signal('Impossible de charger les conversations.'),
             hasNextPage: signal(false),
             isLoadingNextPage: signal(false),
             load: loadConversations,

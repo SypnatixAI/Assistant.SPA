@@ -80,7 +80,7 @@ export class ConversationListState {
           );
           /*
            * Un curseur que le backend refuse ne redeviendra pas valide : le
-           * bouton disparait pour que l'utilisateur recharge la liste au lieu
+           * bouton disparaît pour que l'utilisateur recharge la liste au lieu
            * d'insister sur une pagination morte.
            */
           if (resolveConversationErrorRecovery(error) === 'reload-list') {
