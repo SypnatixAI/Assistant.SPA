@@ -128,3 +128,253 @@ textarea {
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * Page d'erreur technique. Ces regles sont globales et non portees par le
+ * composant : le repli de demarrage (renderBootstrapError) doit pouvoir
+ * afficher la meme page alors qu'Angular n'a pas demarre et que le CSS
+ * encapsule du composant n'existe pas. Tout est porte par
+ * .technical-error-page pour ne rien laisser fuir sur les autres pages.
+ */
+
+.technical-error-page {
+  position: relative;
+  isolation: isolate;
+  min-height: 100vh;
+  min-height: 100svh;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  padding: clamp(1rem, 3vw, 2.5rem);
+  color: #172033;
+  background:
+    radial-gradient(circle at 50% 0%, #d3efec 0%, transparent 32rem),
+    radial-gradient(circle at 90% 90%, #edf7f4 0%, transparent 28rem), #f4f6f8;
+}
+
+.technical-error-page .error-panel {
+  width: min(100%, 74rem);
+  min-height: min(46rem, calc(100svh - clamp(2rem, 6vw, 5rem)));
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: clamp(1.25rem, 3.5vw, 2.75rem);
+  border: 1px solid #d7e6e3;
+  border-radius: clamp(1.25rem, 3vw, 2rem);
+  background: rgb(255 255 255 / 94%);
+  box-shadow:
+    0 2rem 6rem rgb(18 105 94 / 12%),
+    inset 0 1px 0 #fff;
+  backdrop-filter: blur(1.25rem);
+}
+
+.technical-error-page .brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #172033;
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+}
+
+.technical-error-page .brand-mark {
+  width: 2.25rem;
+  height: 2.25rem;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgb(255 255 255 / 65%);
+  border-radius: 0.7rem;
+  background: linear-gradient(145deg, #087d75, #0d5261);
+  box-shadow: 0 0.6rem 1.5rem rgb(8 103 95 / 28%);
+  font-size: 1rem;
+}
+
+.technical-error-page .error-content {
+  width: min(100%, 47rem);
+  align-self: center;
+  margin: clamp(3rem, 8vh, 6rem) auto;
+  text-align: center;
+}
+
+.technical-error-page .status-icon {
+  width: 5.25rem;
+  height: 5.25rem;
+  display: grid;
+  place-items: center;
+  margin: 0 auto 2rem;
+  border: 1px solid #b9e0da;
+  border-radius: 1.6rem;
+  color: #08766c;
+  background: linear-gradient(145deg, #f7fcfb, #eaf7f4);
+  box-shadow:
+    0 1rem 3rem rgb(18 105 94 / 12%),
+    inset 0 1px 0 #fff;
+}
+
+.technical-error-page .status-icon svg {
+  width: 2.5rem;
+  height: 2.5rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.6;
+}
+
+.technical-error-page .eyebrow {
+  margin: 0 0 1rem;
+  color: #08766c;
+  font-size: clamp(0.72rem, 1.2vw, 0.8rem);
+  font-weight: 750;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+}
+
+.technical-error-page h1 {
+  margin: 0;
+  color: #132033;
+  font-size: clamp(2.25rem, 5.5vw, 4.5rem);
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1.04;
+  text-wrap: balance;
+}
+
+.technical-error-page .error-description {
+  max-width: 37rem;
+  margin: 1.5rem auto 0;
+  color: #5f6b7a;
+  font-size: clamp(1rem, 1.8vw, 1.15rem);
+  line-height: 1.7;
+  text-wrap: balance;
+}
+
+.technical-error-page .actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem 1.5rem;
+  margin-top: 2.25rem;
+}
+
+.technical-error-page button,
+.technical-error-page a {
+  min-height: 3.25rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.85rem;
+  font-weight: 700;
+}
+
+.technical-error-page button {
+  gap: 0.65rem;
+  padding: 0.85rem 1.35rem;
+  border: 1px solid rgb(255 255 255 / 10%);
+  color: #fff;
+  background: linear-gradient(135deg, #087d75, #0d5a67);
+  box-shadow: 0 0.8rem 2rem rgb(8 103 95 / 24%);
+  cursor: pointer;
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease,
+    background 160ms ease;
+}
+
+.technical-error-page button svg {
+  width: 1.2rem;
+  height: 1.2rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 2;
+}
+
+.technical-error-page button:hover {
+  background: linear-gradient(135deg, #109186, #116878);
+  box-shadow: 0 1rem 2.5rem rgb(8 103 95 / 32%);
+  transform: translateY(-2px);
+}
+
+.technical-error-page a {
+  padding: 0.75rem 0;
+  color: #24524d;
+  text-decoration-color: rgb(36 82 77 / 40%);
+  text-underline-offset: 0.3rem;
+  transition: color 160ms ease;
+}
+
+.technical-error-page a:hover {
+  color: #172033;
+}
+
+.technical-error-page footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid #dfe8e6;
+  color: #6e7c91;
+  font-size: 0.82rem;
+  line-height: 1.5;
+  text-align: center;
+}
+
+.technical-error-page .status-dot {
+  width: 0.45rem;
+  height: 0.45rem;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #16907f;
+  box-shadow: 0 0 0.75rem rgb(22 144 127 / 65%);
+}
+
+@media (max-width: 40rem) {
+  .technical-error-page {
+    padding: 0;
+  }
+
+  .technical-error-page .error-panel {
+    min-height: 100svh;
+    border: 0;
+    border-radius: 0;
+    padding: 1.25rem;
+    background: rgb(255 255 255 / 88%);
+  }
+
+  .technical-error-page .error-content {
+    margin-block: 2.5rem;
+  }
+
+  .technical-error-page .status-icon {
+    width: 4.5rem;
+    height: 4.5rem;
+    margin-bottom: 1.5rem;
+    border-radius: 1.35rem;
+  }
+
+  .technical-error-page .actions {
+    align-items: stretch;
+    flex-direction: column;
+    margin-top: 1.75rem;
+  }
+
+  .technical-error-page button,
+  .technical-error-page a {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .technical-error-page button,
+  .technical-error-page a {
+    transition: none;
+  }
+
+  .technical-error-page button:hover {
+    transform: none;
+  }
+}
