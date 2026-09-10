@@ -16,6 +16,12 @@
   animation: pulse 1.4s ease-in-out infinite;
 }
 
+.processing__completed {
+  width: 0.6rem;
+  color: var(--color-success, currentColor);
+  font-weight: 700;
+}
+
 @keyframes pulse {
   0%,
   60%,

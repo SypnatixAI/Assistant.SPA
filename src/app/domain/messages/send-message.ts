@@ -1,7 +1,6 @@
 export interface SendMessageRequest {
   readonly conversationId: string | null;
   readonly message: string;
-  readonly model?: string;
 }
 
 export interface SendMessageSourceResponse {
@@ -24,6 +23,9 @@ export interface SendMessageResponse {
 export type SendMessageStreamEvent =
   | MessageAcceptedStreamEvent
   | ProgressUpdatedStreamEvent
+  | ActivityDeltaStreamEvent
+  | ActivityCompletedStreamEvent
+  | AnswerResetStreamEvent
   | AnswerDeltaStreamEvent
   | AnswerCompletedStreamEvent
   | MessageStreamErrorEvent;
@@ -39,9 +41,22 @@ export interface ProgressUpdatedStreamEvent {
   readonly message: string;
 }
 
+export interface ActivityDeltaStreamEvent {
+  readonly type: 'activity.delta';
+  readonly delta: string;
+}
+
+export interface ActivityCompletedStreamEvent {
+  readonly type: 'activity.completed';
+}
+
 export interface AnswerDeltaStreamEvent {
   readonly type: 'answer.delta';
   readonly delta: string;
+}
+
+export interface AnswerResetStreamEvent {
+  readonly type: 'answer.reset';
 }
 
 export interface AnswerCompletedStreamEvent {

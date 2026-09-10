@@ -78,7 +78,7 @@
 - Tester les états de chargement, de succès, vide et d’erreur lorsqu’ils sont
   pertinents pour l’interface.
 - Ne jamais lancer les tests, qu'ils soient ciblés ou complets, et ne jamais exécuter `npm run verify` puisqu'il contient les tests.
-- Exécuter uniquement le build avec `npm run build` lorsqu'une modification importante implique plusieurs fichiers.
+- ne pas lancer de build solution
 - Pour une correction ponctuelle ou une modification ciblée, ne lancer ni test ni build.
 - Ne jamais présenter les tests comme validés puisqu'ils ne sont pas exécutés par Codex.
 - Ne jamais supprimer, désactiver ou assouplir un test uniquement pour faire

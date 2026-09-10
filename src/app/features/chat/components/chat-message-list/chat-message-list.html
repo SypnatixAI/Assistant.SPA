@@ -6,7 +6,10 @@
       <app-user-message [content]="message.content" />
     }
   }
-  @if (processingMessage(); as message) {
-    <app-chat-processing [message]="message" />
+  @for (activity of activities(); track $index) {
+    <app-chat-processing [active]="activity.isActive" [message]="activity.content" />
+  }
+  @if (streamingMessage(); as message) {
+    <app-assistant-message [message]="message" />
   }
 </section>

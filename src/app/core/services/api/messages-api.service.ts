@@ -122,6 +122,14 @@ export class MessagesApiService {
         const message = readString(payload, 'message', 'Message');
         return message === null ? null : { type: 'progress.updated', message };
       }
+      case 'activity.delta': {
+        const delta = readString(payload, 'delta', 'Delta');
+        return delta === null ? null : { type: 'activity.delta', delta };
+      }
+      case 'activity.completed':
+        return { type: 'activity.completed' };
+      case 'answer.reset':
+        return { type: 'answer.reset' };
       case 'answer.delta': {
         const delta = readString(payload, 'delta', 'Delta');
         return delta === null ? null : { type: 'answer.delta', delta };
