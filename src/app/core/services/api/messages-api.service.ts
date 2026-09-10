@@ -1,148 +1,70 @@
-import { Inject, Injectable, Injector } from '@angular/core';
-import { MsalService } from '@azure/msal-angular';
-import { firstValueFrom, Observable, Subscriber } from 'rxjs';
+import { HttpClient, HttpEventType, HttpResponse } from '@angular/common/http';
+import { Inject, Injectable } from '@angular/core';
+import { Observable } from 'rxjs';
 
 import {
   SendMessageRequest,
   SendMessageResponse,
   SendMessageStreamEvent,
 } from '../../../domain/messages/send-message';
-import { ApiError } from '../../../domain/errors/api-error';
-import {
-  AuthenticationMode,
-  PUBLIC_APP_CONFIG,
-  PublicAppConfig,
-} from '../../config/public-app-config';
-import { AuthenticationService } from '../authentication/authentication.service';
-import { LocalAccessTokenService } from '../authentication/local-access-token.service';
+import { PUBLIC_APP_CONFIG, PublicAppConfig } from '../../config/public-app-config';
 
 @Injectable({ providedIn: 'root' })
 export class MessagesApiService {
   constructor(
+    private readonly httpClient: HttpClient,
     @Inject(PUBLIC_APP_CONFIG)
     private readonly publicAppConfig: PublicAppConfig,
-    private readonly injector: Injector,
-    private readonly localAccessTokenService: LocalAccessTokenService,
-    private readonly authenticationService: AuthenticationService,
   ) {}
 
-  streamMessage(request: SendMessageRequest): Observable<SendMessageStreamEvent> {
-    return new Observable<SendMessageStreamEvent>((subscriber) => {
-      const abortController = new AbortController();
-
-      void this.consumeMessageStream(request, subscriber, abortController.signal).catch(
-        (error: unknown) => {
-          if (!abortController.signal.aborted && !subscriber.closed) {
-            subscriber.error(error);
-          }
-        },
-      );
-
-      return () => abortController.abort();
-    });
-  }
-
-  private async consumeMessageStream(
-    request: SendMessageRequest,
-    subscriber: Subscriber<SendMessageStreamEvent>,
-    signal: AbortSignal,
-  ): Promise<void> {
-    const response = await this.openMessageStream(request, signal, true);
-    if (response.body === null) {
-      throw new Error('The message stream response did not contain a readable body.');
-    }
-
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder();
-    let eventBuffer = '';
-
-    try {
-      while (!subscriber.closed) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        eventBuffer = this.emitEvents(
-          decoder.decode(value, { stream: true }),
-          eventBuffer,
-          subscriber,
-        );
-      }
-
-      eventBuffer = this.emitEvents(decoder.decode(), eventBuffer, subscriber);
-      if (!subscriber.closed) {
-        subscriber.complete();
-      }
-    } finally {
-      reader.releaseLock();
-    }
-  }
-
-  private async openMessageStream(
-    request: SendMessageRequest,
-    signal: AbortSignal,
-    canRecoverAuthentication: boolean,
-  ): Promise<Response> {
+  sendMessage(request: SendMessageRequest): Observable<SendMessageResponse> {
     const apiBaseUrl = this.publicAppConfig.apiBaseUrl.replace(/\/$/, '');
-    const accessToken = await this.getAccessToken();
-    const headers: Record<string, string> = {
-      Accept: 'text/event-stream',
-      'Content-Type': 'application/json',
-    };
-    if (accessToken !== null) {
-      headers['Authorization'] = `Bearer ${accessToken}`;
-    }
 
-    const response = await fetch(`${apiBaseUrl}/api/messages/stream`, {
-      body: JSON.stringify(request),
-      cache: 'no-store',
-      headers,
-      method: 'POST',
-      signal,
-    });
-
-    if (response.status === 401 && canRecoverAuthentication) {
-      const recovered = await firstValueFrom(this.authenticationService.handleUnauthorized());
-      if (recovered) {
-        return this.openMessageStream(request, signal, false);
-      }
-    }
-
-    if (!response.ok) {
-      throw await this.createApiError(response);
-    }
-
-    return response;
+    return this.httpClient.post<SendMessageResponse>(`${apiBaseUrl}/api/messages`, request);
   }
 
-  private async getAccessToken(): Promise<string | null> {
-    if (this.publicAppConfig.authenticationMode === AuthenticationMode.LocalJwt) {
-      return this.localAccessTokenService.get();
-    }
+  streamMessage(request: SendMessageRequest): Observable<SendMessageStreamEvent> {
+    const apiBaseUrl = this.publicAppConfig.apiBaseUrl.replace(/\/$/, '');
 
-    const msalService = this.injector.get(MsalService);
-    const account =
-      msalService.instance.getActiveAccount() ?? msalService.instance.getAllAccounts()[0] ?? null;
-    if (account === null) {
-      return null;
-    }
+    return new Observable<SendMessageStreamEvent>((subscriber) => {
+      let receivedText = '';
+      let eventBuffer = '';
+      const subscription = this.httpClient
+        .post(`${apiBaseUrl}/api/messages/stream`, request, {
+          observe: 'events',
+          reportProgress: true,
+          responseType: 'text',
+        })
+        .subscribe({
+          next: (event) => {
+            if (event.type === HttpEventType.DownloadProgress) {
+              const partialText = event.partialText ?? '';
+              const newText = partialText.slice(receivedText.length);
+              receivedText = partialText;
+              eventBuffer = this.emitEvents(newText, eventBuffer, subscriber);
+              return;
+            }
 
-    const result = await firstValueFrom(
-      msalService.acquireTokenSilent({
-        account,
-        scopes: [this.publicAppConfig.entraScope],
-      }),
-    );
-    return result.accessToken;
+            if (event instanceof HttpResponse) {
+              const responseText = event.body ?? '';
+              const newText = responseText.slice(receivedText.length);
+              eventBuffer = this.emitEvents(newText, eventBuffer, subscriber);
+            }
+          },
+          error: (error: unknown) => subscriber.error(error),
+          complete: () => subscriber.complete(),
+        });
+
+      return () => subscription.unsubscribe();
+    });
   }
 
   private emitEvents(
     text: string,
     buffer: string,
-    subscriber: Pick<Subscriber<SendMessageStreamEvent>, 'next'>,
+    subscriber: { next(event: SendMessageStreamEvent): void },
   ): string {
-    let remainingText = `${buffer}${text}`.replace(/\r\n/g, '\n');
+    let remainingText = buffer + text;
     let separatorIndex = remainingText.indexOf('\n\n');
 
     while (separatorIndex >= 0) {
@@ -160,12 +82,13 @@ export class MessagesApiService {
   }
 
   private parseEvent(rawEvent: string): SendMessageStreamEvent | null {
-    const lines = rawEvent.split('\n');
-    const eventName = lines
+    const eventName = rawEvent
+      .split('\n')
       .find((line) => line.startsWith('event:'))
       ?.slice('event:'.length)
       .trim();
-    const data = lines
+    const data = rawEvent
+      .split('\n')
       .filter((line) => line.startsWith('data:'))
       .map((line) => line.slice('data:'.length).trim())
       .join('\n');
@@ -212,10 +135,8 @@ export class MessagesApiService {
         return delta === null ? null : { type: 'answer.delta', delta };
       }
       case 'answer.completed': {
-        const completedResponse = mapSendMessageResponse(payload);
-        return completedResponse === null
-          ? null
-          : { type: 'answer.completed', response: completedResponse };
+        const response = mapSendMessageResponse(payload);
+        return response === null ? null : { type: 'answer.completed', response };
       }
       case 'error': {
         const code = readString(payload, 'code', 'Code');
@@ -224,24 +145,6 @@ export class MessagesApiService {
       default:
         return null;
     }
-  }
-
-  private async createApiError(response: Response): Promise<ApiError> {
-    let payload: unknown = null;
-    try {
-      payload = await response.json();
-    } catch {
-      // Some upstream failures return an empty or non-JSON body.
-    }
-
-    const body = isRecord(payload) ? payload : null;
-    return new ApiError(
-      response.status,
-      (body === null ? null : readString(body, 'code', 'Code')) ?? `http_${response.status}`,
-      (body === null ? null : readString(body, 'message', 'Message')) ??
-        `onPremia a retourné une erreur HTTP ${response.status}.`,
-      null,
-    );
   }
 }
 

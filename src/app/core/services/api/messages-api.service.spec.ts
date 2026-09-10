@@ -1,111 +1,148 @@
+import { HttpEventType, provideHttpClient } from '@angular/common/http';
+import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { firstValueFrom, of, toArray } from 'rxjs';
+import { firstValueFrom } from 'rxjs';
 
 import { AuthenticationMode, LaunchMode, PUBLIC_APP_CONFIG } from '../../config/public-app-config';
-import { AuthenticationService } from '../authentication/authentication.service';
-import { LocalAccessTokenService } from '../authentication/local-access-token.service';
-import { SendMessageRequest, SendMessageStreamEvent } from '../../../domain/messages/send-message';
+import {
+  SendMessageRequest,
+  SendMessageResponse,
+  SendMessageStreamEvent,
+} from '../../../domain/messages/send-message';
 import { MessagesApiService } from './messages-api.service';
 
 describe('MessagesApiService', () => {
-  beforeEach(() => {
+  it('Given_AMultilineQuestion_When_sendMessageIsCalled_Then_ContentIsSentWithoutModelSelection', async () => {
+    // Given
     TestBed.configureTestingModule({
       providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
         MessagesApiService,
         {
           provide: PUBLIC_APP_CONFIG,
           useValue: {
             apiBaseUrl: 'https://api.example.com/',
-            authenticationMode: AuthenticationMode.LocalJwt,
+            authenticationMode: AuthenticationMode.MicrosoftEntra,
             authenticationUrl: '/local-auth/token',
-            launchMode: LaunchMode.Dev,
+            launchMode: LaunchMode.Certification,
             entraAuthority: 'https://login.microsoftonline.com/organizations',
             entraClientId: 'client-id',
             entraScope: 'api://api-client-id/access_as_user',
           },
         },
-        { provide: LocalAccessTokenService, useValue: { get: () => 'local-token' } },
-        {
-          provide: AuthenticationService,
-          useValue: { handleUnauthorized: () => of(false) },
-        },
       ],
     });
-  });
-
-  it('Given_ChunkedSse_When_streamMessageIsCalled_Then_EmitsEventsAsTheBodyIsRead', async () => {
-    // Given
-    const encoder = new TextEncoder();
-    const completedResponse = JSON.stringify({
+    const service = TestBed.inject(MessagesApiService);
+    const httpTestingController = TestBed.inject(HttpTestingController);
+    const requestBody: SendMessageRequest = {
+      conversationId: null,
+      message: `Première ligne\nDeuxième ligne ${'a'.repeat(250)}`,
+    };
+    const response: SendMessageResponse = {
       conversationId: 'conversation-id',
       messageId: 'assistant-message-id',
-      answer: 'Bonjour monde',
+      answer: 'Réponse locale WireMock.',
       model: 'gpt-5.6-luna',
       sources: [],
       warnings: [],
       createdAt: '2026-08-29T14:00:00Z',
-    });
-    const firstChunk = [
-      'event: message.accepted',
-      'data: {"conversationId":"conversation-id","userMessageId":"user-message-id"}',
-      '',
-      'event: answer.delta',
-      'data: {"delta":"Bonjour "}',
-      '',
-      '',
-    ].join('\n');
-    const secondChunk = [
-      'event: answer.delta',
-      'data: {"delta":"monde"}',
-      '',
-      'event: answer.completed',
-      `data: ${completedResponse}`,
-      '',
-      '',
-    ].join('\n');
-    const body = new ReadableStream<Uint8Array>({
-      start(controller) {
-        controller.enqueue(encoder.encode(firstChunk));
-        controller.enqueue(encoder.encode(secondChunk));
-        controller.close();
-      },
-    });
-    const fetchSpy = spyOn(globalThis, 'fetch').and.resolveTo(
-      new Response(body, {
-        headers: { 'Content-Type': 'text/event-stream' },
-        status: 200,
-      }),
-    );
-    const requestBody: SendMessageRequest = { conversationId: null, message: 'Bonjour' };
+    };
 
     // When
-    const events = await firstValueFrom(
-      TestBed.inject(MessagesApiService).streamMessage(requestBody).pipe(toArray()),
-    );
+    const action = firstValueFrom(service.sendMessage(requestBody));
+    const request = httpTestingController.expectOne('https://api.example.com/api/messages');
+    request.flush(response);
 
     // Then
-    expect(fetchSpy).toHaveBeenCalledTimes(1);
-    expect(fetchSpy.calls.mostRecent().args[0]).toBe(
-      'https://api.example.com/api/messages/stream',
-    );
-    const request = fetchSpy.calls.mostRecent().args[1] as RequestInit;
-    expect(request.method).toBe('POST');
-    expect(request.body).toBe(JSON.stringify(requestBody));
-    expect(request.headers).toEqual(
-      jasmine.objectContaining({
-        Accept: 'text/event-stream',
-        Authorization: 'Bearer local-token',
-        'Content-Type': 'application/json',
-      }),
-    );
-    expect(events).toEqual<SendMessageStreamEvent[]>([
+    await expectAsync(action).toBeResolvedTo(response);
+    expect(request.request.method).toBe('POST');
+    expect(request.request.body).toEqual(requestBody);
+    httpTestingController.verify();
+  });
+
+  it('Given_SseEvents_When_streamMessageIsCalled_Then_ParsesDeltasAndTheCompletedResponse', () => {
+    // Given
+    TestBed.configureTestingModule({
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        MessagesApiService,
+        {
+          provide: PUBLIC_APP_CONFIG,
+          useValue: {
+            apiBaseUrl: 'https://api.example.com/',
+            authenticationMode: AuthenticationMode.MicrosoftEntra,
+            authenticationUrl: '/local-auth/token',
+            launchMode: LaunchMode.Certification,
+            entraAuthority: 'https://login.microsoftonline.com/organizations',
+            entraClientId: 'client-id',
+            entraScope: 'api://api-client-id/access_as_user',
+          },
+        },
+      ],
+    });
+    const service = TestBed.inject(MessagesApiService);
+    const httpTestingController = TestBed.inject(HttpTestingController);
+    const events: SendMessageStreamEvent[] = [];
+    const requestBody: SendMessageRequest = { conversationId: null, message: 'Bonjour' };
+    const response = JSON.stringify({
+      ConversationId: 'conversation-id',
+      MessageId: 'assistant-message-id',
+      Answer: 'Bonjour monde',
+      Model: 'gpt-5.6-luna',
+      Sources: [],
+      Warnings: [],
+      CreatedAt: '2026-08-29T14:00:00Z',
+    });
+    const sse = [
+      'event: message.accepted',
+      'data: {"ConversationId":"conversation-id","UserMessageId":"user-message-id"}',
+      '',
+      'event: activity.delta',
+      'data: {"Delta":"Je consulte "}',
+      '',
+      'event: activity.delta',
+      'data: {"Delta":"les informations."}',
+      '',
+      'event: activity.completed',
+      'data: {}',
+      '',
+      'event: answer.delta',
+      'data: {"Delta":"Premier brouillon"}',
+      '',
+      'event: answer.reset',
+      'data: {}',
+      '',
+      'event: answer.delta',
+      'data: {"Delta":"Bonjour "}',
+      '',
+      'event: answer.completed',
+      `data: ${response}`,
+      '',
+      '',
+    ].join('\n');
+
+    // When
+    service.streamMessage(requestBody).subscribe((event) => events.push(event));
+    const request = httpTestingController.expectOne('https://api.example.com/api/messages/stream');
+    request.event({ type: HttpEventType.DownloadProgress, loaded: sse.length, partialText: sse });
+    request.flush(sse);
+
+    // Then
+    expect(request.request.method).toBe('POST');
+    expect(events).toEqual([
       {
         type: 'message.accepted',
         conversationId: 'conversation-id',
         userMessageId: 'user-message-id',
       },
+      { type: 'activity.delta', delta: 'Je consulte ' },
+      { type: 'activity.delta', delta: 'les informations.' },
+      { type: 'activity.completed' },
+      { type: 'answer.delta', delta: 'Premier brouillon' },
+      { type: 'answer.reset' },
       { type: 'answer.delta', delta: 'Bonjour ' },
-      { type: 'answer.delta', delta: 'monde' },
       {
         type: 'answer.completed',
         response: {
@@ -119,5 +156,6 @@ describe('MessagesApiService', () => {
         },
       },
     ]);
+    httpTestingController.verify();
   });
 });
