@@ -175,9 +175,9 @@ describe('ChatPage', () => {
 
     // Then
     const activities = fixture.nativeElement.querySelectorAll('app-chat-processing');
-    expect(activities.length).toBe(3);
-    expect(activities[1]?.textContent).toContain('Je consulte les informations pertinentes.');
-    expect(activities[2]?.textContent).toContain('Je prépare une réponse claire.');
+    expect(activities.length).toBe(2);
+    expect(activities[0]?.textContent).toContain('Je consulte les informations pertinentes.');
+    expect(activities[1]?.textContent).toContain('Je prépare une réponse claire.');
     expect(fixture.nativeElement.querySelector('app-assistant-message')).toBeNull();
 
     // When
@@ -539,7 +539,7 @@ describe('ChatPage', () => {
       .toBeFalse();
   });
 
-  it('Given_AnExhaustedQuota_When_ChatPageIsDisplayed_Then_TheComposerIsBlocked', () => {
+  it('Given_AnExhaustedQuota_When_ChatPageIsDisplayed_Then_TheComposerRemainsAvailable', () => {
     // Given
     isExhausted.set(true);
 
@@ -548,7 +548,7 @@ describe('ChatPage', () => {
 
     // Then
     expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).disabled)
-      .toBeTrue();
+      .toBeFalse();
     expect(fixture.nativeElement.querySelector('app-usage-indicator')).not.toBeNull();
   });
 

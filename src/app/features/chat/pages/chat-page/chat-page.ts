@@ -69,14 +69,10 @@ export class ChatPage implements OnDestroy {
   protected readonly historyError = signal(CONVERSATION_HISTORY_ERROR);
   protected readonly historyRecovery = signal<ConversationErrorRecovery>('retry');
   /**
-   * Le catalogue et le quota sont facultatifs : leurs endpoints n'existent pas
-   * dans tous les environnements. Seul un quota explicitement épuisé bloque
-   * l'envoi; une absence de données laisse le backend appliquer ses valeurs par
-   * défaut.
+   * Le backend reste responsable d'accepter ou de refuser un message. Le quota
+   * affiché est informatif et ne désactive pas le compositeur.
    */
-  protected readonly canSubmitMessage = computed(
-    () => !this.isProcessing() && !this.tokenUsageState.isExhausted(),
-  );
+  protected readonly canSubmitMessage = computed(() => !this.isProcessing());
   protected readonly hasTokenUsage = computed(
     () => this.tokenUsageState.usage() !== null || this.tokenUsageState.isExhausted(),
   );
