@@ -66,7 +66,6 @@ export class ChatPage implements OnDestroy {
   protected readonly streamingAssistantMessage = signal<ChatMessage | null>(null);
   protected readonly selectedConversationId = signal<string | null>(null);
   protected readonly historyStatus = signal<ConversationHistoryStatus>('ready');
-<<<<<<< Updated upstream
   protected readonly historyError = signal(CONVERSATION_HISTORY_ERROR);
   protected readonly historyRecovery = signal<ConversationErrorRecovery>('retry');
   /**
@@ -75,9 +74,6 @@ export class ChatPage implements OnDestroy {
    * l'envoi; une absence de données laisse le backend appliquer ses valeurs par
    * défaut.
    */
-=======
-  /** Seul un quota explicitement épuisé bloque l'envoi. */
->>>>>>> Stashed changes
   protected readonly canSubmitMessage = computed(
     () => !this.isProcessing() && !this.tokenUsageState.isExhausted(),
   );
