@@ -1,6 +1,6 @@
 {
   "/api/models": {
-    "target": "https://localhost:9443",
+    "target": "https://localhost:7292",
     "secure": false
   },
   "/api/usage": {
