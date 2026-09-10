@@ -1,6 +1,9 @@
 import { ChangeDetectionStrategy, Component, input } from '@angular/core';
 
-import { ChatMessage as ChatMessageModel } from '../../models/chat-view-models';
+import {
+  ChatActivity,
+  ChatMessage as ChatMessageModel,
+} from '../../models/chat-view-models';
 import { AssistantMessage } from '../assistant-message/assistant-message';
 import { ChatProcessing } from '../chat-processing/chat-processing';
 import { UserMessage } from '../user-message/user-message';
@@ -14,5 +17,6 @@ import { UserMessage } from '../user-message/user-message';
 })
 export class ChatMessageList {
   readonly messages = input<readonly ChatMessageModel[]>([]);
-  readonly processingMessage = input<string | null>(null);
+  readonly activities = input<readonly ChatActivity[]>([]);
+  readonly streamingMessage = input<ChatMessageModel | null>(null);
 }

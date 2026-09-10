@@ -13,7 +13,6 @@ import {
   SendMessageStreamEvent,
 } from '../../../../domain/messages/send-message';
 import { ConversationListState } from '../../../conversations/state/conversation-list.state';
-import { ModelCatalogState } from '../../../models/state/model-catalog.state';
 import { TokenUsageState } from '../../../usage/state/token-usage.state';
 import { ChatPage } from './chat-page';
 
@@ -31,13 +30,9 @@ describe('ChatPage', () => {
   let conversations: ReturnType<
     typeof signal<readonly { id: string; title: string; preview: string | null }[]>
   >;
-  let models: ReturnType<typeof signal<readonly { id: string; displayName: string; description: string; isDefault: boolean }[]>>;
-  let selectedModelId: ReturnType<typeof signal<string | null>>;
   let usage: ReturnType<typeof signal<{ periodEndsAt: string; tokenLimit: number; tokensUsed: number; tokensRemaining: number; isExhausted: boolean } | null>>;
   let isExhausted: ReturnType<typeof signal<boolean>>;
-  let loadModels: jasmine.Spy;
   let loadUsage: jasmine.Spy;
-  let selectModel: jasmine.Spy;
 
   beforeEach(async () => {
     logout = jasmine.createSpy('logout');
@@ -47,15 +42,11 @@ describe('ChatPage', () => {
     getMessages = jasmine.createSpy('getMessages').and.returnValue(of(createEmptyHistory()));
     loadConversations = jasmine.createSpy('loadConversations');
     conversations = signal<readonly { id: string; title: string; preview: string | null }[]>([]);
-    // Par défaut les endpoints de catalogue et de quota sont absents : la barre
-    // d'outils reste masquée et l'envoi n'est pas bloqué.
-    models = signal<readonly { id: string; displayName: string; description: string; isDefault: boolean }[]>([]);
-    selectedModelId = signal<string | null>(null);
+    // Par défaut l'endpoint de quota est absent : la barre d'outils reste masquée
+    // et l'envoi n'est pas bloqué.
     usage = signal<{ periodEndsAt: string; tokenLimit: number; tokensUsed: number; tokensRemaining: number; isExhausted: boolean } | null>(null);
     isExhausted = signal(false);
-    loadModels = jasmine.createSpy('loadModels');
     loadUsage = jasmine.createSpy('loadUsage');
-    selectModel = jasmine.createSpy('selectModel');
 
     await TestBed.configureTestingModule({
       imports: [ChatPage],
@@ -63,18 +54,6 @@ describe('ChatPage', () => {
         { provide: AuthenticationService, useValue: { logout, session: signal(session) } },
         { provide: MessagesApiService, useValue: { streamMessage } },
         { provide: ConversationsApiService, useValue: { getMessages } },
-        {
-          provide: ModelCatalogState,
-          useValue: {
-            error: signal<string | null>(null),
-            isLoading: signal(false),
-            load: loadModels,
-            models,
-            resetToDefault: jasmine.createSpy('resetToDefault'),
-            selectModel,
-            selectedModelId,
-          },
-        },
         {
           provide: TokenUsageState,
           useValue: {
@@ -104,7 +83,7 @@ describe('ChatPage', () => {
     fixture.detectChanges();
   });
 
-  it('Given_AQuestion_When_submitMessageIsCalled_Then_RequestUsesTheBackendDefaultModel', () => {
+  it('Given_AQuestion_When_submitMessageIsCalled_Then_RequestContainsOnlyTheMessageContext', () => {
     // Given
     const component = fixture.componentInstance;
 
@@ -188,15 +167,17 @@ describe('ChatPage', () => {
     expect(fixture.nativeElement.textContent).toContain('Je cherche les informations utiles…');
 
     // When
-    stream.next({
-      type: 'progress.updated',
-      message: 'Je consulte les documents pertinents.',
-    });
+    stream.next({ type: 'activity.delta', delta: 'Je consulte ' });
+    stream.next({ type: 'activity.delta', delta: 'les informations pertinentes.' });
+    stream.next({ type: 'activity.completed' });
+    stream.next({ type: 'activity.delta', delta: 'Je prépare une réponse claire.' });
     fixture.detectChanges();
 
     // Then
-    const progress = fixture.nativeElement.querySelector('app-chat-processing');
-    expect(progress?.textContent).toContain('Je consulte les documents pertinents.');
+    const activities = fixture.nativeElement.querySelectorAll('app-chat-processing');
+    expect(activities.length).toBe(3);
+    expect(activities[1]?.textContent).toContain('Je consulte les informations pertinentes.');
+    expect(activities[2]?.textContent).toContain('Je prépare une réponse claire.');
     expect(fixture.nativeElement.querySelector('app-assistant-message')).toBeNull();
 
     // When
@@ -205,7 +186,16 @@ describe('ChatPage', () => {
 
     // Then
     expect(fixture.nativeElement.textContent).toContain('Bonjour,');
-    expect(fixture.nativeElement.textContent).not.toContain('Je cherche les informations utiles…');
+    expect(fixture.nativeElement.textContent).toContain('Je cherche les informations utiles…');
+
+    // When
+    stream.next({ type: 'answer.reset' });
+    stream.next({ type: 'answer.delta', delta: 'Réponse révisée.' });
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.textContent).not.toContain('Bonjour,');
+    expect(fixture.nativeElement.textContent).toContain('Réponse révisée.');
   });
 
   it('Given_TheProtectedRoute_When_ChatPageIsCreated_Then_ConversationsAreLoadedOnce', () => {
@@ -525,7 +515,7 @@ describe('ChatPage', () => {
 
 
 
-  it('Given_TheProtectedRoute_When_ChatPageIsCreated_Then_TheCatalogAndQuotaAreLoaded', () => {
+  it('Given_TheProtectedRoute_When_ChatPageIsCreated_Then_TheQuotaIsLoaded', () => {
     // Given
     // La page a été créée par la configuration partagée.
 
@@ -533,11 +523,10 @@ describe('ChatPage', () => {
     // La création est le déclencheur testé.
 
     // Then
-    expect(loadModels).toHaveBeenCalledTimes(1);
     expect(loadUsage).toHaveBeenCalledTimes(1);
   });
 
-  it('Given_UnavailableCatalogAndQuota_When_ChatPageIsDisplayed_Then_TheToolbarStaysHidden', () => {
+  it('Given_UnavailableQuota_When_ChatPageIsDisplayed_Then_TheToolbarStaysHidden', () => {
     // Given
     // Les signaux par défaut représentent des endpoints absents.
 
@@ -548,52 +537,6 @@ describe('ChatPage', () => {
     expect(fixture.nativeElement.querySelector('.composer-toolbar')).toBeNull();
     expect((fixture.nativeElement.querySelector('textarea') as HTMLTextAreaElement).disabled)
       .toBeFalse();
-  });
-
-  it('Given_UnavailableCatalog_When_submitMessageIsCalled_Then_NoModelIsSent', () => {
-    // Given
-    const component = fixture.componentInstance;
-
-    // When
-    component.submitMessage('Bonjour');
-    fixture.detectChanges();
-
-    // Then
-    expect(streamMessage).toHaveBeenCalledOnceWith({ conversationId: null, message: 'Bonjour' });
-  });
-
-  it('Given_AnAvailableCatalog_When_ChatPageIsDisplayed_Then_TheSelectorIsVisible', () => {
-    // Given
-    models.set([
-      { id: 'gpt-5.6-luna', displayName: 'Luna', description: 'Modèle général.', isDefault: true },
-    ]);
-    selectedModelId.set('gpt-5.6-luna');
-
-    // When
-    fixture.detectChanges();
-
-    // Then
-    expect(fixture.nativeElement.querySelector('app-model-selector')).not.toBeNull();
-  });
-
-  it('Given_ASelectedModel_When_submitMessageIsCalled_Then_TheModelIsSent', () => {
-    // Given
-    models.set([
-      { id: 'gpt-5.6-luna', displayName: 'Luna', description: 'Modèle général.', isDefault: true },
-    ]);
-    selectedModelId.set('gpt-5.6-luna');
-    fixture.detectChanges();
-
-    // When
-    fixture.componentInstance.submitMessage('Bonjour');
-    fixture.detectChanges();
-
-    // Then
-    expect(streamMessage).toHaveBeenCalledOnceWith({
-      conversationId: null,
-      message: 'Bonjour',
-      model: 'gpt-5.6-luna',
-    });
   });
 
   it('Given_AnExhaustedQuota_When_ChatPageIsDisplayed_Then_TheComposerIsBlocked', () => {

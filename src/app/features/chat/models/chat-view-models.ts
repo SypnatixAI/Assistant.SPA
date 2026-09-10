@@ -20,3 +20,8 @@ export interface ChatMessage {
   readonly sources: readonly ChatSource[];
   readonly warnings: readonly string[];
 }
+
+export interface ChatActivity {
+  readonly content: string;
+  readonly isActive: boolean;
+}

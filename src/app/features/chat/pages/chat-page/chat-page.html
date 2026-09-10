@@ -110,7 +110,8 @@
             } @else {
               <app-chat-message-list
                 [messages]="messages()"
-                [processingMessage]="processingMessage()"
+                [activities]="activities()"
+                [streamingMessage]="streamingAssistantMessage()"
               />
             }
           }
@@ -118,18 +119,8 @@
       </div>
 
       <footer class="composer-shell">
-        @if (hasModelCatalog() || hasTokenUsage()) {
+        @if (hasTokenUsage()) {
           <div class="composer-toolbar">
-            @if (hasModelCatalog()) {
-              <app-model-selector
-                [models]="modelCatalogState.models()"
-                [selectedModelId]="modelCatalogState.selectedModelId()"
-                [isLoading]="modelCatalogState.isLoading()"
-                [error]="modelCatalogState.error()"
-                (modelSelected)="modelCatalogState.selectModel($event)"
-                (refreshRequested)="modelCatalogState.load()"
-              />
-            }
             @if (hasTokenUsage()) {
               <app-usage-indicator
                 [usage]="tokenUsageState.usage()"

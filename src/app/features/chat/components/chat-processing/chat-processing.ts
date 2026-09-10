@@ -7,5 +7,6 @@ import { ChangeDetectionStrategy, Component, input } from '@angular/core';
   templateUrl: './chat-processing.html',
 })
 export class ChatProcessing {
+  readonly active = input(false);
   readonly message = input.required<string>();
 }

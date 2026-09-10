@@ -31,12 +31,10 @@ import { ChatMessageList } from '../../components/chat-message-list/chat-message
 import { ChatWelcome } from '../../components/chat-welcome/chat-welcome';
 import { ConversationSidebar } from '../../components/conversation-sidebar/conversation-sidebar';
 import { ConversationListState } from '../../../conversations/state/conversation-list.state';
-import { ModelSelector } from '../../../models/components/model-selector/model-selector';
-import { ModelCatalogState } from '../../../models/state/model-catalog.state';
 import { UsageIndicator } from '../../../usage/components/usage-indicator/usage-indicator';
 import { TokenUsageState } from '../../../usage/state/token-usage.state';
 import { toChatMessage } from '../../models/chat-view-mappers';
-import { ChatMessage } from '../../models/chat-view-models';
+import { ChatActivity, ChatMessage } from '../../models/chat-view-models';
 
 type ConversationHistoryStatus = 'error' | 'loading' | 'ready';
 
@@ -51,7 +49,6 @@ const SEND_ERROR = 'La réponse n’a pas pu être terminée. Réessayez dans qu
     ChatMessageList,
     ChatWelcome,
     ConversationSidebar,
-    ModelSelector,
     UsageIndicator,
   ],
   selector: 'app-chat-page',
@@ -63,11 +60,13 @@ export class ChatPage implements OnDestroy {
 
   protected readonly isNavigationOpen = signal(false);
   protected readonly isProcessing = signal(false);
-  protected readonly processingMessage = signal<string | null>(null);
+  protected readonly activities = signal<readonly ChatActivity[]>([]);
   protected readonly sendError = signal<string | null>(null);
   protected readonly messages = signal<readonly ChatMessage[]>([]);
+  protected readonly streamingAssistantMessage = signal<ChatMessage | null>(null);
   protected readonly selectedConversationId = signal<string | null>(null);
   protected readonly historyStatus = signal<ConversationHistoryStatus>('ready');
+<<<<<<< Updated upstream
   protected readonly historyError = signal(CONVERSATION_HISTORY_ERROR);
   protected readonly historyRecovery = signal<ConversationErrorRecovery>('retry');
   /**
@@ -76,11 +75,11 @@ export class ChatPage implements OnDestroy {
    * l'envoi; une absence de données laisse le backend appliquer ses valeurs par
    * défaut.
    */
+=======
+  /** Seul un quota explicitement épuisé bloque l'envoi. */
+>>>>>>> Stashed changes
   protected readonly canSubmitMessage = computed(
     () => !this.isProcessing() && !this.tokenUsageState.isExhausted(),
-  );
-  protected readonly hasModelCatalog = computed(
-    () => this.modelCatalogState.models().length > 0,
   );
   protected readonly hasTokenUsage = computed(
     () => this.tokenUsageState.usage() !== null || this.tokenUsageState.isExhausted(),
@@ -96,6 +95,7 @@ export class ChatPage implements OnDestroy {
   });
 
   private nextLocalMessageId = 1;
+  private isCurrentActivityOpen = false;
   private historySubscription: Subscription | null = null;
   private activeMessageStream: Subscription | null = null;
   private readonly composer = viewChild(ChatComposer);
@@ -110,12 +110,10 @@ export class ChatPage implements OnDestroy {
     private readonly conversationsApiService: ConversationsApiService,
     private readonly messagesApiService: MessagesApiService,
     protected readonly conversationListState: ConversationListState,
-    protected readonly modelCatalogState: ModelCatalogState,
     protected readonly tokenUsageState: TokenUsageState,
   ) {
     this.session = authenticationService.session;
     this.conversationListState.load();
-    this.modelCatalogState.load();
     this.tokenUsageState.load();
   }
 
@@ -159,10 +157,10 @@ export class ChatPage implements OnDestroy {
     this.historyStatus.set('ready');
     this.selectedConversationId.set(null);
     this.messages.set([]);
+    this.streamingAssistantMessage.set(null);
     this.isProcessing.set(false);
-    this.processingMessage.set(null);
+    this.resetActivities();
     this.sendError.set(null);
-    this.modelCatalogState.resetToDefault();
     this.closeNavigation(false);
     queueMicrotask(() => this.composer()?.focus());
   }
@@ -171,8 +169,9 @@ export class ChatPage implements OnDestroy {
     this.cancelActiveMessageStream();
     this.selectedConversationId.set(conversationId);
     this.messages.set([]);
+    this.streamingAssistantMessage.set(null);
     this.isProcessing.set(false);
-    this.processingMessage.set(null);
+    this.resetActivities();
     this.sendError.set(null);
     this.closeNavigation();
     this.loadConversationHistory(conversationId);
@@ -237,8 +236,12 @@ export class ChatPage implements OnDestroy {
       warnings: [],
     };
     this.messages.update((messages) => [...messages, userMessage]);
+    this.streamingAssistantMessage.set(null);
     this.isProcessing.set(true);
-    this.processingMessage.set('Je cherche les informations utiles…');
+    this.activities.set([
+      { content: 'Je cherche les informations utiles…', isActive: true },
+    ]);
+    this.isCurrentActivityOpen = false;
     this.sendError.set(null);
     this.scrollConversationToBottom();
 
@@ -247,9 +250,6 @@ export class ChatPage implements OnDestroy {
       .streamMessage({
         conversationId: this.selectedConversationId(),
         message: content,
-        ...(this.modelCatalogState.selectedModelId()
-          ? { model: this.modelCatalogState.selectedModelId() as string }
-          : {}),
       })
       .subscribe({
         next: (event) => this.handleStreamEvent(event, streamingAssistantMessageId),
@@ -268,16 +268,33 @@ export class ChatPage implements OnDestroy {
       case 'message.accepted':
         return;
       case 'progress.updated':
-        this.processingMessage.set(event.message);
+        this.activities.update((activities) => [
+          ...activities.map((activity) => ({ ...activity, isActive: false })),
+          { content: event.message, isActive: false },
+        ]);
+        this.isCurrentActivityOpen = false;
         this.scrollConversationToBottom();
         return;
+      case 'activity.delta':
+        this.appendActivityDelta(event.delta);
+        return;
+      case 'activity.completed':
+        this.activities.update((activities) =>
+          activities.map((activity, index) =>
+            index === activities.length - 1 ? { ...activity, isActive: false } : activity,
+          ),
+        );
+        this.isCurrentActivityOpen = false;
+        return;
+      case 'answer.reset':
+        this.resetAnswerDraft(streamingAssistantMessageId);
+        return;
       case 'answer.delta':
-        this.processingMessage.set(null);
         this.appendAnswerDelta(streamingAssistantMessageId, event.delta);
         return;
       case 'answer.completed':
-        this.processingMessage.set(null);
-        this.applyMessageResponse(event.response, streamingAssistantMessageId);
+        this.resetActivities();
+        this.applyMessageResponse(event.response);
         return;
       case 'error':
         this.failMessageStream(streamingAssistantMessageId, event.code);
@@ -286,32 +303,54 @@ export class ChatPage implements OnDestroy {
   }
 
   private appendAnswerDelta(streamingAssistantMessageId: string, delta: string): void {
-    const existingMessage = this.messages().find(
-      (message) => message.id === streamingAssistantMessageId,
-    );
+    const existingMessage = this.streamingAssistantMessage();
 
-    if (existingMessage === undefined) {
-      this.messages.update((messages) => [
-        ...messages,
-        {
-          content: delta,
-          id: streamingAssistantMessageId,
-          role: 'assistant',
-          sources: [],
-          warnings: [],
-        },
-      ]);
+    if (existingMessage === null) {
+      this.streamingAssistantMessage.set({
+        content: delta,
+        id: streamingAssistantMessageId,
+        role: 'assistant',
+        sources: [],
+        warnings: [],
+      });
     } else {
-      this.messages.update((messages) =>
-        messages.map((message) =>
-          message.id === streamingAssistantMessageId
-            ? { ...message, content: `${message.content}${delta}` }
-            : message,
-        ),
-      );
+      this.streamingAssistantMessage.set({
+        ...existingMessage,
+        content: `${existingMessage.content}${delta}`,
+      });
     }
 
     this.scrollConversationToBottom();
+  }
+
+  private appendActivityDelta(delta: string): void {
+    this.activities.update((activities) => {
+      if (!this.isCurrentActivityOpen || activities.length === 0) {
+        return [
+          ...activities.map((activity) => ({ ...activity, isActive: false })),
+          { content: delta, isActive: true },
+        ];
+      }
+
+      return activities.map((activity, index) =>
+        index === activities.length - 1
+          ? { content: `${activity.content}${delta}`, isActive: true }
+          : activity,
+      );
+    });
+    this.isCurrentActivityOpen = true;
+    this.scrollConversationToBottom();
+  }
+
+  private resetActivities(): void {
+    this.activities.set([]);
+    this.isCurrentActivityOpen = false;
+  }
+
+  private resetAnswerDraft(streamingAssistantMessageId: string): void {
+    if (this.streamingAssistantMessage()?.id === streamingAssistantMessageId) {
+      this.streamingAssistantMessage.set(null);
+    }
   }
 
   /**
@@ -319,10 +358,7 @@ export class ChatPage implements OnDestroy {
    * rechargée afin que la nouvelle conversation et son titre apparaissent dans
    * la barre latérale sans attendre un rechargement de la page.
    */
-  private applyMessageResponse(
-    response: SendMessageResponse,
-    streamingAssistantMessageId: string,
-  ): void {
+  private applyMessageResponse(response: SendMessageResponse): void {
     const assistantMessage: ChatMessage = {
       content: response.answer,
       id: response.messageId,
@@ -333,16 +369,8 @@ export class ChatPage implements OnDestroy {
 
     const previousConversationId = this.selectedConversationId();
     this.selectedConversationId.set(response.conversationId);
-    const hasStreamingMessage = this.messages().some(
-      (message) => message.id === streamingAssistantMessageId,
-    );
-    this.messages.update((messages) =>
-      hasStreamingMessage
-        ? messages.map((message) =>
-            message.id === streamingAssistantMessageId ? assistantMessage : message,
-          )
-        : [...messages, assistantMessage],
-    );
+    this.streamingAssistantMessage.set(null);
+    this.messages.update((messages) => [...messages, assistantMessage]);
     this.scrollConversationToBottom();
 
     if (previousConversationId !== response.conversationId) {
@@ -353,7 +381,7 @@ export class ChatPage implements OnDestroy {
   private completeMessageStream(): void {
     this.activeMessageStream = null;
     this.isProcessing.set(false);
-    this.processingMessage.set(null);
+    this.resetActivities();
     if (this.hasTokenUsage()) {
       this.tokenUsageState.load();
     }
@@ -364,12 +392,10 @@ export class ChatPage implements OnDestroy {
       this.tokenUsageState.load();
     }
 
-    this.messages.update((messages) =>
-      messages.filter((message) => message.id !== streamingAssistantMessageId),
-    );
+    this.resetAnswerDraft(streamingAssistantMessageId);
     this.activeMessageStream = null;
     this.isProcessing.set(false);
-    this.processingMessage.set(null);
+    this.resetActivities();
     this.sendError.set(this.getSendErrorMessage(errorCode));
   }
 

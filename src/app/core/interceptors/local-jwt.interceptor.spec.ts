@@ -33,7 +33,7 @@ describe('LocalJwtInterceptor', () => {
     } as HttpHandler;
 
     // When
-    await firstValueFrom(interceptor.intercept(new HttpRequest('GET', '/api/models'), next));
+    await firstValueFrom(interceptor.intercept(new HttpRequest('GET', '/api/usage'), next));
 
     // Then
     expect(forwardedRequest!.headers.get('Authorization')).toBe('Bearer local-access-token');
