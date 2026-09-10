@@ -234,9 +234,7 @@ export class ChatPage implements OnDestroy {
     this.messages.update((messages) => [...messages, userMessage]);
     this.streamingAssistantMessage.set(null);
     this.isProcessing.set(true);
-    this.activities.set([
-      { content: 'Je cherche les informations utiles…', isActive: true },
-    ]);
+    this.activities.set([]);
     this.isCurrentActivityOpen = false;
     this.sendError.set(null);
     this.scrollConversationToBottom();
@@ -302,6 +300,7 @@ export class ChatPage implements OnDestroy {
     const existingMessage = this.streamingAssistantMessage();
 
     if (existingMessage === null) {
+      this.resetActivities();
       this.streamingAssistantMessage.set({
         content: delta,
         id: streamingAssistantMessageId,
@@ -316,7 +315,7 @@ export class ChatPage implements OnDestroy {
       });
     }
 
-    this.scrollConversationToBottom();
+    this.scrollConversationToBottom('auto');
   }
 
   private appendActivityDelta(delta: string): void {
@@ -415,12 +414,12 @@ export class ChatPage implements OnDestroy {
     this.activeMessageStream = null;
   }
 
-  private scrollConversationToBottom(): void {
+  private scrollConversationToBottom(behavior: ScrollBehavior = 'smooth'): void {
     queueMicrotask(() => {
       const conversationScroll = this.conversationScroll()?.nativeElement;
       if (conversationScroll) {
         conversationScroll.scrollTo({
-          behavior: 'smooth',
+          behavior,
           top: conversationScroll.scrollHeight,
         });
       }

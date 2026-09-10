@@ -164,7 +164,7 @@ describe('ChatPage', () => {
     fixture.detectChanges();
 
     // Then
-    expect(fixture.nativeElement.textContent).toContain('Je cherche les informations utiles…');
+    expect(fixture.nativeElement.querySelector('app-chat-processing')).toBeNull();
 
     // When
     stream.next({ type: 'activity.delta', delta: 'Je consulte ' });
@@ -186,7 +186,7 @@ describe('ChatPage', () => {
 
     // Then
     expect(fixture.nativeElement.textContent).toContain('Bonjour,');
-    expect(fixture.nativeElement.textContent).toContain('Je cherche les informations utiles…');
+    expect(fixture.nativeElement.querySelectorAll('app-chat-processing').length).toBe(0);
 
     // When
     stream.next({ type: 'answer.reset' });
