@@ -138,7 +138,9 @@ describe('MessagesApiService', () => {
     const requestBody: SendMessageRequest = { conversationId: null, message: 'Bonjour' };
 
     // When
-    const events = await firstValueFrom(service.streamMessage(requestBody).pipe(toArray()));
+    const events: SendMessageStreamEvent[] = await firstValueFrom(
+      service.streamMessage(requestBody).pipe(toArray()),
+    );
 
     // Then
     expect(fetchSpy).toHaveBeenCalledTimes(1);
@@ -155,7 +157,7 @@ describe('MessagesApiService', () => {
         'Content-Type': 'application/json',
       }),
     );
-    expect(events).toEqual<SendMessageStreamEvent[]>([
+    expect(events).toEqual([
       {
         type: 'message.accepted',
         conversationId: 'conversation-id',

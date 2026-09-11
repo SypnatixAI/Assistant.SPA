@@ -262,7 +262,7 @@ export class ChatPage implements OnDestroy {
           ...activities.map((activity) => ({ ...activity, isActive: false })),
           { content: event.message, isActive: true },
         ]);
-        this.isCurrentActivityOpen = true;
+        this.isCurrentActivityOpen = false;
         this.scrollConversationToBottom();
         return;
       case 'activity.delta':
