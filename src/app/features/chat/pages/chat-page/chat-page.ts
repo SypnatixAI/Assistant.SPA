@@ -260,9 +260,9 @@ export class ChatPage implements OnDestroy {
       case 'progress.updated':
         this.activities.update((activities) => [
           ...activities.map((activity) => ({ ...activity, isActive: false })),
-          { content: event.message, isActive: false },
+          { content: event.message, isActive: true },
         ]);
-        this.isCurrentActivityOpen = false;
+        this.isCurrentActivityOpen = true;
         this.scrollConversationToBottom();
         return;
       case 'activity.delta':

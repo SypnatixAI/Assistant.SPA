@@ -167,6 +167,15 @@ describe('ChatPage', () => {
     expect(fixture.nativeElement.querySelector('app-chat-processing')).toBeNull();
 
     // When
+    stream.next({ type: 'progress.updated', message: 'Préparation de la réponse…' });
+    fixture.detectChanges();
+
+    // Then
+    expect(fixture.nativeElement.querySelector('app-chat-processing')?.textContent).toContain(
+      'Préparation de la réponse…',
+    );
+
+    // When
     stream.next({ type: 'activity.delta', delta: 'Je consulte ' });
     stream.next({ type: 'activity.delta', delta: 'les informations pertinentes.' });
     stream.next({ type: 'activity.completed' });
@@ -175,9 +184,10 @@ describe('ChatPage', () => {
 
     // Then
     const activities = fixture.nativeElement.querySelectorAll('app-chat-processing');
-    expect(activities.length).toBe(2);
-    expect(activities[0]?.textContent).toContain('Je consulte les informations pertinentes.');
-    expect(activities[1]?.textContent).toContain('Je prépare une réponse claire.');
+    expect(activities.length).toBe(3);
+    expect(activities[0]?.textContent).toContain('Préparation de la réponse…');
+    expect(activities[1]?.textContent).toContain('Je consulte les informations pertinentes.');
+    expect(activities[2]?.textContent).toContain('Je prépare une réponse claire.');
     expect(fixture.nativeElement.querySelector('app-assistant-message')).toBeNull();
 
     // When
