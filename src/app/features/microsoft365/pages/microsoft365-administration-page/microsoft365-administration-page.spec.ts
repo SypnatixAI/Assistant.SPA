@@ -88,8 +88,8 @@ describe('Microsoft365AdministrationPage', () => {
 
     // When
     const checkboxes = page.querySelectorAll<HTMLInputElement>('.site-checkbox');
-    checkboxes[0]?.click();
-    checkboxes[1]?.click();
+    expect(checkboxes[0]?.checked).toBeTrue();
+    expect(checkboxes[1]?.checked).toBeTrue();
     fixture.detectChanges();
     page.querySelector<HTMLButtonElement>('.confirm-sites-button')?.click();
     fixture.detectChanges();
@@ -105,7 +105,7 @@ describe('Microsoft365AdministrationPage', () => {
     expect(page.textContent).not.toContain('indexer');
   });
 
-  it('Given_CheckedSite_When_togglePendingSiteIsCalledAgain_Then_SiteIsNotSubmitted', () => {
+  it('Given_AutoSelectedSite_When_togglePendingSiteIsCalled_Then_SiteIsDeselected', () => {
     // Given
     const site: Microsoft365Site = {
       siteId: 'local-site',
@@ -127,7 +127,6 @@ describe('Microsoft365AdministrationPage', () => {
     const checkbox = page.querySelector<HTMLInputElement>('.site-checkbox');
 
     // When
-    checkbox?.click();
     checkbox?.click();
     fixture.detectChanges();
 

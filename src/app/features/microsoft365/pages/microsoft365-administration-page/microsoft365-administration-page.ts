@@ -2,10 +2,24 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
+  OnDestroy,
   signal,
 } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { catchError, concatMap, forkJoin, from, map, of, toArray } from 'rxjs';
+import {
+  catchError,
+  concatMap,
+  forkJoin,
+  from,
+  map,
+  of,
+  Subscription,
+  switchMap,
+  take,
+  takeWhile,
+  timer,
+  toArray,
+} from 'rxjs';
 
 import { Microsoft365ApiService } from '../../../../core/services/api/microsoft365-api.service';
 import {
@@ -29,7 +43,7 @@ type ConsentOutcome = 'success' | 'error' | null;
   styleUrl: './microsoft365-administration-page.css',
   templateUrl: './microsoft365-administration-page.html',
 })
-export class Microsoft365AdministrationPage {
+export class Microsoft365AdministrationPage implements OnDestroy {
   protected readonly consentOutcome: ConsentOutcome;
   protected readonly homeRoute: string;
   protected readonly currentStep = computed(() => {
@@ -51,6 +65,7 @@ export class Microsoft365AdministrationPage {
   protected readonly isOnboardingMode: boolean;
   protected readonly isSelectingSite = signal(false);
   protected readonly isStartingConsent = signal(false);
+  protected readonly isPreparingChat = signal(false);
   protected readonly lists = signal<readonly Microsoft365List[]>([]);
   protected readonly onboardingStatus =
     signal<Microsoft365OnboardingStatus | null>(null);
@@ -61,6 +76,7 @@ export class Microsoft365AdministrationPage {
   protected readonly selectedSite = signal<Microsoft365Site | null>(null);
   protected readonly sites = signal<readonly Microsoft365Site[]>([]);
   protected readonly updatingSourceIds = signal<ReadonlySet<string>>(new Set());
+  private preparationSubscription?: Subscription;
 
   constructor(
     route: ActivatedRoute,
@@ -268,7 +284,40 @@ export class Microsoft365AdministrationPage {
   }
 
   protected finishOnboarding(): void {
-    this.navigationService.navigateToChat();
+    if (this.isPreparingChat()) {
+      return;
+    }
+
+    this.isPreparingChat.set(true);
+    this.errorMessage.set(null);
+    this.preparationSubscription?.unsubscribe();
+    this.preparationSubscription = timer(0, 1000).pipe(
+      switchMap(() => this.microsoft365ApiService.getOnboardingStatus()),
+      take(300),
+      takeWhile((status) => !status.isEnvironmentReady, true),
+    ).subscribe({
+      next: (status) => {
+        this.onboardingStatus.set(status);
+        if (status.isEnvironmentReady) {
+          this.isPreparingChat.set(false);
+          this.navigationService.navigateToChat();
+        }
+      },
+      error: (error: unknown) => {
+        this.isPreparingChat.set(false);
+        this.errorMessage.set(this.getErrorMessage(error));
+      },
+      complete: () => {
+        if (!this.onboardingStatus()?.isEnvironmentReady) {
+          this.isPreparingChat.set(false);
+          this.errorMessage.set('La préparation prend plus de temps que prévu. Vous pouvez réessayer.');
+        }
+      },
+    });
+  }
+
+  ngOnDestroy(): void {
+    this.preparationSubscription?.unsubscribe();
   }
 
   private loadStatus(): void {
@@ -277,15 +326,6 @@ export class Microsoft365AdministrationPage {
       next: (status) => {
         this.onboardingStatus.set(status);
         this.isLoadingStatus.set(false);
-
-        if (
-          status.isComplete &&
-          this.isOnboardingMode &&
-          this.consentOutcome === null
-        ) {
-          this.navigationService.navigateToChat();
-          return;
-        }
 
         if (status.isConsentComplete && status.isAdministrator) {
           this.loadSites();
@@ -312,7 +352,13 @@ export class Microsoft365AdministrationPage {
     this.microsoft365ApiService.getSites().subscribe({
       next: ({ sites }) => {
         this.sites.set(sites);
-        this.pendingSiteIds.set(new Set());
+        this.pendingSiteIds.set(
+          new Set(
+            sites
+              .filter((site) => !site.isSelected)
+              .map((site) => site.siteId),
+          ),
+        );
         this.isLoadingSites.set(false);
         const selectedSite = sites.find((site) => site.isSelected) ?? null;
         this.selectedSite.set(selectedSite);
@@ -337,7 +383,7 @@ export class Microsoft365AdministrationPage {
       lists: this.microsoft365ApiService.getLists(siteId),
     }).subscribe({
       next: ({ drives, lists }) => {
-        this.drives.set(drives);
+        this.drives.set(drives.filter((drive) => drive.kind !== 'onedrive'));
         this.lists.set(lists.lists);
         this.isLoadingSources.set(false);
       },

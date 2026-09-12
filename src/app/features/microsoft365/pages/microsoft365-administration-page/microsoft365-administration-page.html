@@ -42,6 +42,19 @@
     </aside>
 
     <section class="workspace" aria-live="polite">
+      @if (isPreparingChat()) {
+        <div class="environment-preparing" role="status" aria-live="assertive">
+          <div class="preparation-orbit" aria-hidden="true">
+            <span></span><span></span><span></span>
+            <div class="preparation-core">O</div>
+          </div>
+          <p class="eyebrow">Dernière étape</p>
+          <h2>Votre environnement est en train d’être créé.</h2>
+          <p>Nous préparons vos sources Microsoft 365 et les outils de recherche. Cela ne prend généralement que quelques instants.</p>
+          <div class="preparation-progress" aria-hidden="true"><span></span></div>
+          <small>Vous serez automatiquement redirigé vers le chat dès que tout sera prêt.</small>
+        </div>
+      }
       @if (isLoadingStatus()) {
         <div class="loading-state" role="status">
           <span class="spinner" aria-hidden="true"></span>
