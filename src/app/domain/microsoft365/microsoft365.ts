@@ -9,6 +9,7 @@ export interface Microsoft365OnboardingStatus {
   readonly hasSelectedSite: boolean;
   readonly hasIndexedSource: boolean;
   readonly isComplete: boolean;
+  readonly isEnvironmentReady?: boolean;
 }
 
 export interface Microsoft365Site {
@@ -29,6 +30,7 @@ export interface Microsoft365Drive {
   readonly webUrl: string | null;
   readonly status: string;
   readonly isIndexed: boolean;
+  readonly kind?: 'sharepoint' | 'onedrive';
 }
 
 export interface Microsoft365List {

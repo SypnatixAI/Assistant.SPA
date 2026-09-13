@@ -90,6 +90,7 @@ export class ChatPage implements OnDestroy {
   private isCurrentActivityOpen = false;
   private historySubscription: Subscription | null = null;
   private activeMessageStream: Subscription | null = null;
+  private pendingScrollFrame: number | null = null;
   private readonly composer = viewChild(ChatComposer);
   private readonly conversationScroll =
     viewChild<ElementRef<HTMLElement>>('conversationScroll');
@@ -116,6 +117,9 @@ export class ChatPage implements OnDestroy {
   ngOnDestroy(): void {
     this.cancelActiveMessageStream();
     this.historySubscription?.unsubscribe();
+    if (this.pendingScrollFrame !== null) {
+      cancelAnimationFrame(this.pendingScrollFrame);
+    }
   }
 
   /**
@@ -411,7 +415,12 @@ export class ChatPage implements OnDestroy {
   }
 
   private scrollConversationToBottom(behavior: ScrollBehavior = 'smooth'): void {
-    queueMicrotask(() => {
+    if (this.pendingScrollFrame !== null) {
+      cancelAnimationFrame(this.pendingScrollFrame);
+    }
+
+    this.pendingScrollFrame = requestAnimationFrame(() => {
+      this.pendingScrollFrame = null;
       const conversationScroll = this.conversationScroll()?.nativeElement;
       if (conversationScroll) {
         conversationScroll.scrollTo({
