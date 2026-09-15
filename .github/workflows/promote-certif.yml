@@ -4,8 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       image_tag:
-        description: Immutable SPA SHA tag published to ACR, for example sha-0123...cdef
-        required: true
+        description: Optional SPA SHA tag; defaults to the latest published tag in ACR
+        required: false
         type: string
 
 permissions:
@@ -29,15 +29,6 @@ jobs:
     environment: certif
 
     steps:
-      - name: Validate immutable tag
-        env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
-        run: |
-          if ! printf '%s' "$IMAGE_TAG" | grep -Eq '^sha-[0-9a-f]{40}$'; then
-            echo "image_tag must be sha- followed by the complete 40-character Git SHA." >&2
-            exit 1
-          fi
-
       - name: Sign in to Azure with OIDC
         uses: azure/login@v2
         with:
@@ -45,9 +36,30 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      - name: Resolve immutable tag
+        id: image
+        env:
+          REQUESTED_IMAGE_TAG: ${{ inputs.image_tag }}
+        run: |
+          IMAGE_TAG="$REQUESTED_IMAGE_TAG"
+          if [ -z "$IMAGE_TAG" ]; then
+            IMAGE_TAG="$(az acr repository show-tags \
+              --name "$ACR_NAME" \
+              --repository assistant-spa \
+              --orderby time_desc \
+              --output tsv \
+              | grep -m 1 -E '^sha-[0-9a-f]{40}$' || true)"
+          fi
+
+          if ! printf '%s' "$IMAGE_TAG" | grep -Eq '^sha-[0-9a-f]{40}$'; then
+            echo "No published SPA SHA tag was found in ACR, or image_tag is not a complete Git SHA." >&2
+            exit 1
+          fi
+          echo "image_tag=${IMAGE_TAG}" >> "$GITHUB_OUTPUT"
+
       - name: Verify image in ACR
         env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          IMAGE_TAG: ${{ steps.image.outputs.image_tag }}
         run: |
           az acr repository show \
             --name "$ACR_NAME" \
@@ -57,7 +69,7 @@ jobs:
 
       - name: Deploy CERTIF SPA at zero replicas
         env:
-          IMAGE_TAG: ${{ inputs.image_tag }}
+          IMAGE_TAG: ${{ steps.image.outputs.image_tag }}
         run: |
           az containerapp update \
             --name ca-assistant-spa-certif \
