@@ -68,7 +68,6 @@ jobs:
 
 
       - name: Deploy CERTIF SPA for verification
-        id: deploy
         env:
           IMAGE_TAG: ${{ steps.image.outputs.image_tag }}
         run: |
@@ -88,11 +87,3 @@ jobs:
             "https://${SPA_FQDN}/"
           curl --fail --retry 12 --retry-delay 10 --retry-all-errors \
             "https://${SPA_FQDN}/assets/config/config.json"
-
-      - name: Stop CERTIF SPA after verification
-        if: ${{ always() && steps.deploy.outcome != 'skipped' }}
-        run: |
-          az containerapp update \
-            --name ca-assistant-spa-certif \
-            --resource-group "$CERTIF_RESOURCE_GROUP" \
-            --min-replicas 0
